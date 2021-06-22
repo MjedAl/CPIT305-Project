@@ -92,18 +92,17 @@ public class login extends javax.swing.JFrame {
         try {
             Socket soc = new Socket("localhost", 1900);
             //2- 
-            InputStream is = soc.getInputStream();
-            OutputStream os = soc.getOutputStream();
-            Scanner scan = new Scanner(is);
-            PrintWriter wrt = new PrintWriter(os, true);
+            Scanner scan = new Scanner(soc.getInputStream());
+            PrintWriter wrt = new PrintWriter(soc.getOutputStream(), true);
+            String tableNum = "";
             //3-read and write
             String line;
             if (kitchen) {
                 wrt.println("Kitchen");
             } else {
                 // ask for the table number
-                String number = JOptionPane.showInputDialog(null, "Please Enter the table number (one odd number only): ");
-                wrt.println("table:" + number);
+                tableNum = JOptionPane.showInputDialog(null, "Please Enter the table number (one odd number only): ");
+                wrt.println("table:" + tableNum);
             }
             // get respond
             line = scan.nextLine();
@@ -113,11 +112,16 @@ public class login extends javax.swing.JFrame {
                     soc.close();
                 }
             } else {
-                // accepted, redirect user to his own new screen.
+                // accepted, TODO redirect user to his own new screen with the same params (socket Input,Output streams).
                 System.out.println("Accepted. you will be redirected");
-                while (true) {
-                    
+                if (kitchen) {
+                    while (true) {
+                        
+                    }
+                } else {
+                    table tableGUI = new table(soc, scan, wrt, tableNum);
                 }
+
             }
         } catch (IOException e) {
 

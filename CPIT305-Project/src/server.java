@@ -136,6 +136,9 @@ class connectionHandler extends Thread {
                             } else {
                                 wrt.println("failed");
                             }
+                        } else if (line.startsWith("products")) {
+                            // table want to get the list of products
+                            // get it throught the db
                         } else {
                             wrt.println("rejected:0:unknown operation");
                         }
@@ -164,6 +167,45 @@ class connectionHandler extends Thread {
 }
 
 // this class that will deal with our db to send and recevie commands
+// (Singleton design pattern)
 class db {
+    
+    public static db theDB = new db();
+    private boolean setup = false;
+    private String dbConnectionString = "";
+    private db() {
+        
+    }
+    // this way we get ensure that we can only have one instance from this class. so only one connection with the db will be 
+    // established
+    public db getInstance(){
+        return this.theDB;
+    }
+    // TODO replace with array of objects
+    private String[] getProducts() throws dbNotSettedUpException{
+        if (!setup){
+            throw new dbNotSettedUpException();
+        }
+        String[] arr = {"t","tt","ttt"};
+        return arr;
+        // connect to db and get prodcts
+    } 
+    private boolean setupDB(){
+        if (setup){
+            return true;
+        }else{
+            // TODO.. set up db
+            this.setup = true;
+            return true;
+        }
+        
+    }
+    
 
+}
+
+class dbNotSettedUpException extends Exception{
+    public dbNotSettedUpException() {
+        super("Please set up the database before using it.");
+    }
 }
