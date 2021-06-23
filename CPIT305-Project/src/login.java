@@ -116,10 +116,11 @@ public class login extends javax.swing.JFrame {
                 System.out.println("Accepted. you will be redirected");
                 if (kitchen) {
                     while (true) {
-                        
+
                     }
                 } else {
                     table tableGUI = new table(soc, scan, wrt, tableNum);
+                    dispose();
                 }
 
             }

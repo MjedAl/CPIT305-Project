@@ -2,6 +2,7 @@
 import java.awt.PopupMenu;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -27,14 +28,16 @@ public class table extends javax.swing.JFrame {
         initComponents();
     }
 
-    String[] products;
-    Socket connection;
-    Scanner scanner;
-    PrintWriter writer;
-    String tableID;
+    private String[] products;
+    private Socket connection;
+    private Scanner scanner;
+    private PrintWriter writer;
+    private String tableID;
+    // TODO change to array list of object
+    private ArrayList<Integer> cartProductsIDs = new ArrayList<Integer>();
+    private tableCart cart;
 
     public table(Socket connection, Scanner scanner, PrintWriter writer, String tableID) {
-        System.out.println("kkk");
         this.connection = connection;
         this.scanner = scanner;
         this.writer = writer;
@@ -43,6 +46,8 @@ public class table extends javax.swing.JFrame {
         refreshList();
         tableNumLabel.setText("Table number : " + tableID);
         this.setVisible(true);
+        // make obj for the cart
+        cart = new tableCart(this, connection, scanner, writer);
     }
 
     private void refreshList() {
@@ -55,24 +60,17 @@ public class table extends javax.swing.JFrame {
         }
     }
 
-    private void makeOrder() {
-
+    private void addToCart() {
         int[] productsIndxes = productsTable.getSelectedRows();
-        String products = "order:";
-        System.out.println(productsTable.getModel().getRowCount());
-        for (int i = 0; i < products.length(); i++) {
-            products += productsTable.getModel().getValueAt(productsIndxes[i], 0)+"+";
+        for (int i = 0; i < productsIndxes.length; i++) {
+            cartProductsIDs.add((Integer) productsTable.getValueAt(productsIndxes[i], 0));
         }
-        System.out.println(products);
-        // send order the server
-        writer.println(products);
-        String response = scanner.nextLine();
-        System.out.println(response);
-        if (response.equalsIgnoreCase("accepted")){
-                JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
-        }else{
-                JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
-        }
+        // update the button
+        cartBtn.setText("Cart (" + cartProductsIDs.size() + ")");
+    }
+
+    public void updateCartBtn(String text) {
+        cartBtn.setText(text);
     }
 
     /**
@@ -102,6 +100,11 @@ public class table extends javax.swing.JFrame {
 
         cartBtn.setText("Cart (0)");
         cartBtn.setToolTipText("");
+        cartBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cartBtnActionPerformed(evt);
+            }
+        });
 
         addBtn.setText("Add");
         addBtn.setToolTipText("");
@@ -177,9 +180,17 @@ public class table extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-        // TODO add your handling code here:
-        makeOrder();
+        addToCart();
     }//GEN-LAST:event_addBtnActionPerformed
+
+    private void cartBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cartBtnActionPerformed
+        if (cartProductsIDs.size() == 0) {
+            JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            this.cart.callAgain(cartProductsIDs, products);
+            this.setVisible(false);
+        }
+    }//GEN-LAST:event_cartBtnActionPerformed
 
     /**
      * @param args the command line arguments
