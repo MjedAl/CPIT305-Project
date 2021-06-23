@@ -115,9 +115,8 @@ public class login extends javax.swing.JFrame {
                 // accepted, TODO redirect user to his own new screen with the same params (socket Input,Output streams).
                 System.out.println("Accepted. you will be redirected");
                 if (kitchen) {
-                    while (true) {
-
-                    }
+                    kitchen kitchenGUI = new kitchen(soc, scan, wrt);
+                    dispose();
                 } else {
                     table tableGUI = new table(soc, scan, wrt, tableNum);
                     dispose();

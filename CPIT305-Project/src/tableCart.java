@@ -24,9 +24,8 @@ public class tableCart extends javax.swing.JFrame {
     public tableCart() {
         initComponents();
     }
-
-    private ArrayList<Integer> cartProductsIDs = new ArrayList<Integer>();
-    private String[] products;
+    
+    private ArrayList<product> productsInCart;
     private table theTable;
     private Socket connection;
     private Scanner scanner;
@@ -40,13 +39,13 @@ public class tableCart extends javax.swing.JFrame {
         initComponents();
     }
 
-    public void callAgain(ArrayList<Integer> cartProductsIDs, String[] products) {
-        this.cartProductsIDs = cartProductsIDs;
-        this.products = products;
+    public void callAgain(ArrayList<product> productsInCart) {
+        this.productsInCart = productsInCart;
+
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
-        for (int i = 0; i < this.cartProductsIDs.size(); i++) {
-            model.addRow(new Object[]{i, this.cartProductsIDs.get(i)});
+        for (int i = 0; i < this.productsInCart.size(); i++) {
+            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice()});
         }
         this.setVisible(true);
     }
@@ -58,28 +57,30 @@ public class tableCart extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        tableNumLabel = new javax.swing.JLabel();
         scrollPane = new javax.swing.JScrollPane();
         productsTable = new javax.swing.JTable();
-        tableNumLabel = new javax.swing.JLabel();
         sendOrderBtn = new javax.swing.JButton();
         removeBtn = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        tableNumLabel.setText("Your cart:");
+
         productsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Name", "Prrice"
+                "ID", "Name", "Price"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -91,8 +92,6 @@ public class tableCart extends javax.swing.JFrame {
             }
         });
         scrollPane.setViewportView(productsTable);
-
-        tableNumLabel.setText("Your cart:");
 
         sendOrderBtn.setText("Send order");
         sendOrderBtn.setToolTipText("");
@@ -162,14 +161,19 @@ public class tableCart extends javax.swing.JFrame {
 
     private void sendOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendOrderBtnActionPerformed
         // TODO add your handling code here:
-        if (cartProductsIDs.size() == 0) {
+        if (productsInCart.size() == 0) {
             JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            String products = "order:";
-            for (int i = 0; i < cartProductsIDs.size(); i++) {
-                products += cartProductsIDs.get(i) + "+";
+
+            String productsStr = "order:";
+            for (int i = 0; i < productsInCart.size(); i++) {
+                productsStr += productsInCart.get(i).getName()+" + ";
             }
-            writer.println(products);
+            // remove the last " + "
+            productsStr = productsStr.substring(0, productsStr.length()-3);
+
+            System.out.println(productsStr);
+            writer.println(productsStr);
 
             String response = scanner.nextLine();
             System.out.println(response);
@@ -190,14 +194,14 @@ public class tableCart extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
 
         for (int i = 0; i < productsIndxes.length; i++) {
-            cartProductsIDs.remove((Integer) productsTable.getValueAt(productsIndxes[i], 0));
+            productsInCart.remove((Integer) productsTable.getValueAt(productsIndxes[i], 0));
 
             // remove from the view
             model.removeRow(productsIndxes[i]);
 
         }
 
-        this.theTable.updateCartBtn("Cart (" + cartProductsIDs.size() + ")");
+        this.theTable.updateCartBtn("Cart (" + productsInCart.size() + ")");
     }//GEN-LAST:event_removeBtnActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed

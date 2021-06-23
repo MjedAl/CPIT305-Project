@@ -1,6 +1,9 @@
 
 import java.io.*;
 import java.net.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,11 +19,15 @@ import java.util.logging.Logger;
 public class server {
 
     public static connectionHandler theKitchen = null;
+    public static db theDB;
 
     public static void main(String[] args) throws IOException {
         //1-create server socket
         ServerSocket srv = new ServerSocket(1900);
         System.out.println("Server starting...");
+        System.out.println("Getting DB...");
+        theDB = db.getInstance();
+        //
         connectionHandler handler;
         while (true) {
             System.out.println("Waiting for connection...");
@@ -44,23 +51,18 @@ class connectionHandler extends Thread {
     }
 
     public boolean sendOrderToKitchen(String order) {
-        System.out.println(order);
-        System.out.println(isKitchen);
-        if (!isKitchen) {
+        // send order to the socket .....
+        // table id # order # time
+        OutputStream os;
+        try {
+            os = server.theKitchen.connection.getOutputStream();
+            PrintWriter wrt = new PrintWriter(os, true);
+            wrt.println(this.tableNumber + "#" + order.replace("order:", "") + "#" + "time");
+            return true;
+        } catch (IOException ex) {
+            System.out.println(ex);
+            //Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
             return false;
-        } else {
-            // send order to the socket .....
-            OutputStream os;
-            try {
-                os = connection.getOutputStream();
-                PrintWriter wrt = new PrintWriter(os, true);
-                wrt.println(order);
-                return true;
-            } catch (IOException ex) {
-                System.out.println(ex);
-                //Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-                return false;
-            }
         }
     }
 
@@ -114,44 +116,61 @@ class connectionHandler extends Thread {
                 rejected = true;
             }
             if (!rejected) {
-                // recevie commands
                 while (true) {
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    // waiting for commands.
                     line = scan.nextLine();
+
                     System.out.println("Recevied command from : -"
                             + (this.isKitchen ? "Kitchen" : " table number:" + this.tableNumber)
                             + "- commands is :" + line);
 
                     if (line.equalsIgnoreCase("exit")) {
                         break;
-                    }
-                    if (!isKitchen) {
-                        if (line.startsWith("order")) {
-                            if (server.theKitchen.sendOrderToKitchen(line)) {
-                                wrt.println("accepted");
-                            } else {
-                                wrt.println("failed");
-                            }
-                        } else if (line.startsWith("products")) {
-                            // table want to get the list of products
+                    } else if (line.startsWith("products")) {
+                        try {
+                            //
+                            // client want to get the list of products
                             // get it throught the db
-                        } else {
-                            wrt.println("rejected:0:unknown operation");
+                            ArrayList<product> products = server.theDB.getProducts();
+                            // convert the products to something that we can send to the socket
+                            // send it via object stream?
+                            ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
+                            objectOutputStream.writeObject(products);
+
+                        } catch (dbNotSettedUpException ex) {
+                            wrt.println("failed:0:server error");
+                            // print log
+                        } catch (SQLException ex) {
+                            wrt.println("failed:0:server error");
+                            // print log
                         }
-                        // line is order to be sent to kitchen
-                        // tables can send orders and expects answer from kitchen....
-                        // read order
-                        // send to kitchen?
-                        // recevie answer from kitchen
-                        // send it to table???
+
                     } else {
-                        // something coming from kitchen socket... adding, edit, delete product
-                        // critical section maybe?
-                        wrt.println("recived");
+                        if (!isKitchen) {
+                            if (line.startsWith("order")) {
+                                if (sendOrderToKitchen(line)) {
+                                    wrt.println("accepted");
+                                } else {
+                                    wrt.println("failed");
+                                }
+                            } else {
+                                wrt.println("rejected:0:unknown operation");
+                            }
+                            // line is order to be sent to kitchen
+                            // tables can send orders and expects answer from kitchen....
+                            // read order
+                            // send to kitchen?
+                            // recevie answer from kitchen
+                            // send it to table???
+                        } else {
+                            System.out.println("aaa");
+                            // accepted, continue
+                            //...
+                            // kitchen will only recevie orders and products from us.
+                            // something coming from kitchen socket... adding, edit, delete product
+                            // critical section maybe?
+                            wrt.println("recived");
+                        }
                     }
                 }
             } else {
@@ -164,48 +183,4 @@ class connectionHandler extends Thread {
 
     }
 
-}
-
-// this class that will deal with our db to send and recevie commands
-// (Singleton design pattern)
-class db {
-    
-    public static db theDB = new db();
-    private boolean setup = false;
-    private String dbConnectionString = "";
-    private db() {
-        
-    }
-    // this way we get ensure that we can only have one instance from this class. so only one connection with the db will be 
-    // established
-    public db getInstance(){
-        return this.theDB;
-    }
-    // TODO replace with array of objects
-    private String[] getProducts() throws dbNotSettedUpException{
-        if (!setup){
-            throw new dbNotSettedUpException();
-        }
-        String[] arr = {"t","tt","ttt"};
-        return arr;
-        // connect to db and get prodcts
-    } 
-    private boolean setupDB(){
-        if (setup){
-            return true;
-        }else{
-            // TODO.. set up db
-            this.setup = true;
-            return true;
-        }
-        
-    }
-    
-
-}
-
-class dbNotSettedUpException extends Exception{
-    public dbNotSettedUpException() {
-        super("Please set up the database before using it.");
-    }
 }

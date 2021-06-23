@@ -1,9 +1,14 @@
 
 import java.awt.PopupMenu;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -28,13 +33,14 @@ public class table extends javax.swing.JFrame {
         initComponents();
     }
 
-    private String[] products;
+    ArrayList<product> products;
     private Socket connection;
     private Scanner scanner;
     private PrintWriter writer;
     private String tableID;
     // TODO change to array list of object
-    private ArrayList<Integer> cartProductsIDs = new ArrayList<Integer>();
+    private ArrayList<product> productsInCart = new ArrayList<product>();
+
     private tableCart cart;
 
     public table(Socket connection, Scanner scanner, PrintWriter writer, String tableID) {
@@ -52,21 +58,33 @@ public class table extends javax.swing.JFrame {
 
     private void refreshList() {
         // TODO make request and get updated list from the server.
-        this.products = new String[]{"t", "tt", "ttt"};
 
-        DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
-        for (int i = 0; i < this.products.length; i++) {
-            model.addRow(new Object[]{i, this.products[i]});
+        System.out.println("making request");
+        // req
+        writer.println("products");
+        try {
+            ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
+            this.products = (ArrayList<product>) objectInputStream.readObject();
+
+            DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
+            for (int i = 0; i < this.products.size(); i++) {
+                model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice()});
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
     private void addToCart() {
         int[] productsIndxes = productsTable.getSelectedRows();
         for (int i = 0; i < productsIndxes.length; i++) {
-            cartProductsIDs.add((Integer) productsTable.getValueAt(productsIndxes[i], 0));
+            productsInCart.add(new product((Integer) productsTable.getValueAt(productsIndxes[i], 0),
+                     (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 0x2)));
         }
-        // update the button
-        cartBtn.setText("Cart (" + cartProductsIDs.size() + ")");
+        cartBtn.setText("Cart (" + productsInCart.size() + ")");
     }
 
     public void updateCartBtn(String text) {
@@ -119,14 +137,14 @@ public class table extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Name", "Prrice"
+                "ID", "Name", "Price"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -184,10 +202,10 @@ public class table extends javax.swing.JFrame {
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void cartBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cartBtnActionPerformed
-        if (cartProductsIDs.size() == 0) {
+        if (productsInCart.size() == 0) {
             JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            this.cart.callAgain(cartProductsIDs, products);
+            this.cart.callAgain(productsInCart);
             this.setVisible(false);
         }
     }//GEN-LAST:event_cartBtnActionPerformed
