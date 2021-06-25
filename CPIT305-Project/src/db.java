@@ -25,6 +25,8 @@ public class db {
     private db() {
         System.out.println("first time connecting. first time settings...");
         setupDB();
+        // Uncomment bellow if u want some random data.
+        addSomeRandomProducts();
         System.out.println("connection is ready...");
     }
 
@@ -35,33 +37,44 @@ public class db {
         return theDB;
     }
 
-    // TODO replace with array of objects
     public ArrayList<product> getProducts() throws dbNotSettedUpException, SQLException {
         if (!setup) {
             throw new dbNotSettedUpException();
         }
-
         ResultSet products = stat.executeQuery("select * from products");
-        
         ArrayList<product> productsObj = new ArrayList<product>();
         while (products.next()) {
-            productsObj.add(new product(products.getInt("id"), products.getString("name"), products.getDouble("price")));
+            productsObj.add(new product(products.getInt("id"), products.getString("name"), products.getDouble("price"), products.getInt("quantity")));
         }
         return productsObj;
     }
 
-    public void addProduct(String name, double price) throws SQLException {
-        PreparedStatement pstat = con.prepareStatement("insert into products values (?,?)");
+    public void addProduct(String name, double price, int quantity) throws SQLException {
+        PreparedStatement pstat = con.prepareStatement("insert into products (name,price,quantity) values (?,?,?)");
         pstat.setString(0, name);
         pstat.setDouble(1, price);
+        pstat.setInt(2, quantity);
         pstat.execute();
     }
 
-    public void updateProduct(int id, String name, double price) throws SQLException {
-        PreparedStatement pstat = con.prepareStatement("update products set name=?, price=? where id=?");
+    private void addSomeRandomProducts() {
+        try {
+            addProduct("Ms7b", 10, 30);
+            addProduct("burger", 5, 44);
+            addProduct("random", 564, 33);
+            addProduct("uhuih", 3, 10);
+            addProduct("oyufyfu", 123, 20);
+        } catch (SQLException ex) {
+            Logger.getLogger(db.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void updateProduct(int id, String name, double price, int quantity) throws SQLException {
+        PreparedStatement pstat = con.prepareStatement("update products set name=?, price=?, quantity=? where id=?");
         pstat.setString(0, name);
         pstat.setDouble(1, price);
-        pstat.setInt(2, id);
+        pstat.setInt(2, quantity);
+        pstat.setInt(3, id);
         pstat.execute();
     }
 
@@ -76,9 +89,7 @@ public class db {
             return true;
         } else {
             try {
-                // TODO.. set up db
                 this.setup = true;
-
                 //1-load mySql Driver
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 //2-create connection
@@ -86,7 +97,7 @@ public class db {
                 //3-create statement
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 //4- use statement to execute any sql commands
-                stat.execute("create table if not exists products (ID int primary key, name char(20),price double)");
+                stat.execute("create table if not exists products (ID int primary key, name char(20),price double, quantity int)");
                 return true;
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(db.class.getName()).log(Level.SEVERE, null, ex);

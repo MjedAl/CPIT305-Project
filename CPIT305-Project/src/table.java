@@ -15,11 +15,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author Mjed
@@ -38,9 +33,9 @@ public class table extends javax.swing.JFrame {
     private Scanner scanner;
     private PrintWriter writer;
     private String tableID;
-    // TODO change to array list of object
+    // the products list
     private ArrayList<product> productsInCart = new ArrayList<product>();
-
+    // obj of the cart class
     private tableCart cart;
 
     public table(Socket connection, Scanner scanner, PrintWriter writer, String tableID) {
@@ -57,10 +52,7 @@ public class table extends javax.swing.JFrame {
     }
 
     private void refreshList() {
-        // TODO make request and get updated list from the server.
-
-        System.out.println("making request");
-        // req
+        // requsting the updated list from the db
         writer.println("products");
         try {
             ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
@@ -68,7 +60,17 @@ public class table extends javax.swing.JFrame {
 
             DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
             for (int i = 0; i < this.products.size(); i++) {
-                model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice()});
+                // only add products that are available
+                if (this.products.get(i).getQuantity() > 0) {
+                    model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice()});
+                } else {
+                    // product that just got update is not available, so check if it was in the cart remove it.
+                    for (int j = 0; j < productsInCart.size(); j++) {
+                        if (productsInCart.get(j).getId() == this.products.get(i).getId()) {
+                            JOptionPane.showMessageDialog(null, "Sorrt we removed the prouct "+productsInCart.get(j).getName()+" from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
@@ -82,7 +84,7 @@ public class table extends javax.swing.JFrame {
         int[] productsIndxes = productsTable.getSelectedRows();
         for (int i = 0; i < productsIndxes.length; i++) {
             productsInCart.add(new product((Integer) productsTable.getValueAt(productsIndxes[i], 0),
-                     (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 0x2)));
+                    (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 0x2), 0));
         }
         cartBtn.setText("Cart (" + productsInCart.size() + ")");
     }
@@ -115,6 +117,11 @@ public class table extends javax.swing.JFrame {
 
         refreshBtn.setText("Refresh");
         refreshBtn.setToolTipText("");
+        refreshBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshBtnActionPerformed(evt);
+            }
+        });
 
         cartBtn.setText("Cart (0)");
         cartBtn.setToolTipText("");
@@ -209,6 +216,12 @@ public class table extends javax.swing.JFrame {
             this.setVisible(false);
         }
     }//GEN-LAST:event_cartBtnActionPerformed
+
+    private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
+        refreshList();
+        JOptionPane.showMessageDialog(null, "List updated", "Done", JOptionPane.DEFAULT_OPTION);
+
+    }//GEN-LAST:event_refreshBtnActionPerformed
 
     /**
      * @param args the command line arguments
