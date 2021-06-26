@@ -21,7 +21,7 @@ public class db {
     private String dbConnectionString = "";
     private Connection con;
     private Statement stat;
-
+    
     private db() {
         System.out.println("first time connecting. first time settings...");
         setupDB();

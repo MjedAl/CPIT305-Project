@@ -61,6 +61,8 @@ public class trackOrderPage extends javax.swing.JFrame {
         for (int i = 0; i < this.productsInCart.size(); i++) {
             model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), 1});
         }
+        // add lisiter for table changes?
+
     }
 
     /**
@@ -78,7 +80,6 @@ public class trackOrderPage extends javax.swing.JFrame {
         removeOrderBtn = new javax.swing.JButton();
         removeProductBtn = new javax.swing.JButton();
         saveChangeBtn = new javax.swing.JButton();
-        addProductBtn1 = new javax.swing.JButton();
         statusProgressbar = new javax.swing.JProgressBar();
         orderStatus = new javax.swing.JLabel();
 
@@ -97,9 +98,16 @@ public class trackOrderPage extends javax.swing.JFrame {
                 "ID", "Name", "Price", "Quantity"
             }
         ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Integer.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false, false, true
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
@@ -119,6 +127,11 @@ public class trackOrderPage extends javax.swing.JFrame {
 
         removeProductBtn.setText("Remove product");
         removeProductBtn.setToolTipText("");
+        removeProductBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeProductBtnActionPerformed(evt);
+            }
+        });
 
         saveChangeBtn.setText("Send changes");
         saveChangeBtn.setToolTipText("");
@@ -128,20 +141,16 @@ public class trackOrderPage extends javax.swing.JFrame {
             }
         });
 
-        addProductBtn1.setText("Add product");
-        addProductBtn1.setToolTipText("");
-
         javax.swing.GroupLayout editOrderPanelLayout = new javax.swing.GroupLayout(editOrderPanel);
         editOrderPanel.setLayout(editOrderPanelLayout);
         editOrderPanelLayout.setHorizontalGroup(
             editOrderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(editOrderPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(editOrderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(removeOrderBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(removeProductBtn, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(saveChangeBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addProductBtn1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(editOrderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(removeOrderBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(removeProductBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(saveChangeBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         editOrderPanelLayout.setVerticalGroup(
@@ -150,12 +159,10 @@ public class trackOrderPage extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(removeOrderBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(addProductBtn1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(removeProductBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(saveChangeBtn)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         statusProgressbar.setMaximum(2);
@@ -200,10 +207,9 @@ public class trackOrderPage extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(orderStatus)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(editOrderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                        .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(editOrderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
 
         pack();
@@ -232,18 +238,37 @@ public class trackOrderPage extends javax.swing.JFrame {
 
     private void saveChangeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveChangeBtnActionPerformed
         // TODO add your handling code here:
+        // update the products quantity
+
+        // 
         if (orderStatusNum == 0) {
+            //save the updated quantity
+            for (int i = 0; i < orderTable.getRowCount(); i++) {
+                this.productsInCart.get(i).setQuantity(((Integer)orderTable.getValueAt(i, 3)));
+            }
             //
             String productsStr = "";
             for (int i = 0; i < productsInCart.size(); i++) {
                 productsStr += productsInCart.get(i).getQuantity() + "*" + productsInCart.get(i).getName() + " + ";
             }
+            //
+
             // remove the last " + "
             productsStr = productsStr.substring(0, productsStr.length() - 3);
             writer.println("orderUpdate:" + productsStr + ":" + this.orderNumber);
             JOptionPane.showMessageDialog(null, "Your order was updated :(", "Okay", JOptionPane.DEFAULT_OPTION);
         }
     }//GEN-LAST:event_saveChangeBtnActionPerformed
+
+    private void removeProductBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeProductBtnActionPerformed
+        // TODO add your handling code here:
+        int[] productsIndxes = orderTable.getSelectedRows();
+        DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
+        for (int i = 0; i < productsIndxes.length; i++) {
+            productsInCart.remove(productsIndxes[i]);
+            model.removeRow(productsIndxes[i]);
+        }
+    }//GEN-LAST:event_removeProductBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -281,7 +306,6 @@ public class trackOrderPage extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addProductBtn1;
     private javax.swing.JPanel editOrderPanel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;

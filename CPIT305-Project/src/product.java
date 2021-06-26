@@ -41,4 +41,10 @@ public class product implements Serializable {
         return this.id + "-" + this.name + "-" + this.price;
     }
 
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+    
+    
+
 }

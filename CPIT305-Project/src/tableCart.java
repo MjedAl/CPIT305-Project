@@ -220,13 +220,17 @@ public class tableCart extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
 
         for (int i = 0; i < productsIndxes.length; i++) {
-            productsInCart.remove((Integer) productsTable.getValueAt(productsIndxes[i], 0));
-
+            // remove the selected product from the array list
+            // first we need to find the product in the cart
+            
+            //
+            productsInCart.remove(productsIndxes[i]);
+            
             // remove from the view
             model.removeRow(productsIndxes[i]);
 
         }
-
+        
         this.theTable.updateCartBtn("Cart (" + productsInCart.size() + ")");
     }//GEN-LAST:event_removeBtnActionPerformed
 
