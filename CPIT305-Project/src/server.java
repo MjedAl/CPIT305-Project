@@ -132,7 +132,7 @@ class connectionHandler extends Thread {
         String orderNumber = line.split(":")[2];
         if (validateOrder(order)) {
             PrintWriter wrt = server.theKitchen.wrt;
-            wrt.println("updatedOrder#" + this.tableNumber + "#" + order.replace("order:", "") + "#" + "time" + "#" + orderNumber);
+            wrt.println("updateOrder#" + this.tableNumber + "#" + order.replace("order:", "") + "#" + "time" + "#" + orderNumber);
             return true;
         }
         return false;

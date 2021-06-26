@@ -159,6 +159,7 @@ public class tableCart extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+
     private void sendOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendOrderBtnActionPerformed
         // TODO add your handling code here:
         if (productsInCart.size() == 0) {
@@ -175,23 +176,32 @@ public class tableCart extends javax.swing.JFrame {
             System.out.println(productsStr);
             writer.println(productsStr);
 
-            String response = scanner.nextLine();
+//            String response = scanner.nextLine();
+            String response = "";
+            System.out.println("before");
+            while (theTable.ServerReponse.equalsIgnoreCase("")) {
+                // keep waiting until we get response from the other thread
+                response = theTable.ServerReponse;
+            }
+            theTable.ServerReponse="";
+            System.out.println("after");
+
             System.out.println(response);
             int orderNumber = -1;
-            
+
             if (response.startsWith("accepted")) {
                 JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
                 orderNumber = Integer.parseInt(response.split(":")[1]);
                 // open tracking page for the order
                 // open the order page
-                trackOrderPage orderPage  = new trackOrderPage(productsInCart, theTable, connection, scanner, writer, orderNumber);
-                
+                trackOrderPage orderPage = new trackOrderPage(productsInCart, theTable, connection, scanner, writer, orderNumber);
+
                 // save the tracking page to the main page
                 theTable.addNewTrackPage(orderPage);
                 theTable.resetCart();
                 dispose();
                 // reset the cart
-                
+
             } else {
                 JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
                 // show rejection reaseon

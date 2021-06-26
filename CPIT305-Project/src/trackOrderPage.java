@@ -122,6 +122,11 @@ public class trackOrderPage extends javax.swing.JFrame {
 
         saveChangeBtn.setText("Send changes");
         saveChangeBtn.setToolTipText("");
+        saveChangeBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveChangeBtnActionPerformed(evt);
+            }
+        });
 
         addProductBtn1.setText("Add product");
         addProductBtn1.setToolTipText("");
@@ -207,7 +212,6 @@ public class trackOrderPage extends javax.swing.JFrame {
     private void removeOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeOrderBtnActionPerformed
         // TODO add your handling code here:
         // 0 == waiting for aproval so user can edit and cancel order
-        System.out.println(orderStatusNum);
         if (orderStatusNum == 0) {
             //
             String productsStr = "";
@@ -225,6 +229,21 @@ public class trackOrderPage extends javax.swing.JFrame {
         }
         // 
     }//GEN-LAST:event_removeOrderBtnActionPerformed
+
+    private void saveChangeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveChangeBtnActionPerformed
+        // TODO add your handling code here:
+        if (orderStatusNum == 0) {
+            //
+            String productsStr = "";
+            for (int i = 0; i < productsInCart.size(); i++) {
+                productsStr += productsInCart.get(i).getQuantity() + "*" + productsInCart.get(i).getName() + " + ";
+            }
+            // remove the last " + "
+            productsStr = productsStr.substring(0, productsStr.length() - 3);
+            writer.println("orderUpdate:" + productsStr + ":" + this.orderNumber);
+            JOptionPane.showMessageDialog(null, "Your order was updated :(", "Okay", JOptionPane.DEFAULT_OPTION);
+        }
+    }//GEN-LAST:event_saveChangeBtnActionPerformed
 
     /**
      * @param args the command line arguments

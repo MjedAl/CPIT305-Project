@@ -19,6 +19,52 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author Mjed
  */
+// This thread will always keep waiting for updates from the server
+class listenForServerUpdates extends Thread {
+
+    private Socket connection;
+    private Scanner scanner;
+    private PrintWriter writer;
+    private table tableGUI;
+
+    public listenForServerUpdates(Socket connection, Scanner scanner, PrintWriter writer, table tableGUI) {
+        this.connection = connection;
+        this.scanner = scanner;
+        this.writer = writer;
+        this.tableGUI = tableGUI;
+    }
+
+    @Override
+    public void run() {
+        String line;
+        System.out.println("Table is lisining for commands.");
+        while (true) {
+
+            // recevied new order.
+            // newOrder # table id # order # time
+            line = scanner.nextLine();
+            String[] parts = line.split(":");
+            System.out.println("We recevied the following command : " + line);
+
+            if (line.startsWith("orderStatusUpdate")) {
+                // some of our order status has been updated so we need to check witch one is it.
+                int status = Integer.parseInt(parts[1]);
+                int orderID = Integer.parseInt(parts[2]);
+                for (int i = 0; i < tableGUI.orderPages.size(); i++) {
+                    if (tableGUI.orderPages.get(i).orderNumber == orderID) {
+                        tableGUI.orderPages.get(i).updateStatus(status);
+                    }
+                }
+            } else if (line.startsWith("accepted")) {
+                tableGUI.ServerReponse = line;
+            } else if (line.startsWith("rejected")) {
+                tableGUI.ServerReponse = line;
+            }
+
+        }
+    }
+}
+
 public class table extends javax.swing.JFrame {
 
     /**
@@ -38,8 +84,11 @@ public class table extends javax.swing.JFrame {
     // obj of the cart class
     private tableCart cart;
     // keep track of current order list.
+    public String ServerReponse = "";
+    // ^ to keep track of server latest response
+
     // 
-    private ArrayList<trackOrderPage> orderPages = new ArrayList<trackOrderPage>();
+    public ArrayList<trackOrderPage> orderPages = new ArrayList<trackOrderPage>();
 
     public void addNewTrackPage(trackOrderPage page) {
         this.orderPages.add(page);
@@ -47,7 +96,7 @@ public class table extends javax.swing.JFrame {
 
     public void removeTrackPage(int orderNumber) {
         for (int i = 0; i < orderPages.size(); i++) {
-            if (orderPages.get(i).orderNumber == orderNumber){
+            if (orderPages.get(i).orderNumber == orderNumber) {
                 orderPages.remove(i);
                 break;
             }
@@ -65,6 +114,8 @@ public class table extends javax.swing.JFrame {
         this.setVisible(true);
         // make obj for the cart
         cart = new tableCart(this, connection, scanner, writer);
+        // make a thread that will wait for updates.
+        new listenForServerUpdates(connection, scanner, writer, this).start();
     }
 
     private void refreshList() {

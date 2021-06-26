@@ -45,7 +45,7 @@ class listenForOrders extends Thread {
             } else if (orderDetails[0].equalsIgnoreCase("updateOrder")) {
                 // we look for the row of the order that we want to update
                 for (int i = 0; i < kitchenGUI.ordersTable.getRowCount(); i++) {
-                    if (((String) kitchenGUI.ordersTable.getValueAt(i, 3)).equalsIgnoreCase(orderDetails[3])) {
+                    if (((String) kitchenGUI.ordersTable.getValueAt(i, 3)).equalsIgnoreCase(orderDetails[4])) {
                         // update the order
                         kitchenGUI.ordersTable.setValueAt(orderDetails[2].replaceAll("\\+", "\n"), i, 1);
                         break;
