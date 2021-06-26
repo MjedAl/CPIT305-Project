@@ -24,7 +24,7 @@ public class tableCart extends javax.swing.JFrame {
     public tableCart() {
         initComponents();
     }
-    
+
     private ArrayList<product> productsInCart;
     private table theTable;
     private Socket connection;
@@ -45,7 +45,7 @@ public class tableCart extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.productsInCart.size(); i++) {
-            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice()});
+            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), 1});
         }
         this.setVisible(true);
     }
@@ -73,14 +73,14 @@ public class tableCart extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Name", "Price"
+                "ID", "Name", "Price", "Quantity"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Integer.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, true
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -167,21 +167,37 @@ public class tableCart extends javax.swing.JFrame {
 
             String productsStr = "order:";
             for (int i = 0; i < productsInCart.size(); i++) {
-                productsStr += productsInCart.get(i).getName()+" + ";
+                productsStr += productsInCart.get(i).getQuantity() + "*" + productsInCart.get(i).getName() + " + ";
             }
             // remove the last " + "
-            productsStr = productsStr.substring(0, productsStr.length()-3);
+            productsStr = productsStr.substring(0, productsStr.length() - 3);
 
             System.out.println(productsStr);
             writer.println(productsStr);
 
             String response = scanner.nextLine();
             System.out.println(response);
-            if (response.equalsIgnoreCase("accepted")) {
+            int orderNumber = -1;
+            
+            if (response.startsWith("accepted")) {
                 JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
+                orderNumber = Integer.parseInt(response.split(":")[1]);
+                // open tracking page for the order
+                // open the order page
+                trackOrderPage orderPage  = new trackOrderPage(productsInCart, theTable, connection, scanner, writer, orderNumber);
+                
+                // save the tracking page to the main page
+                theTable.addNewTrackPage(orderPage);
+                theTable.resetCart();
+                dispose();
+                // reset the cart
+                
             } else {
                 JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
+                // show rejection reaseon
+                // redirect to home page
             }
+
         }
         dispose();
         theTable.setVisible(true);

@@ -26,7 +26,7 @@ public class db {
         System.out.println("first time connecting. first time settings...");
         setupDB();
         // Uncomment bellow if u want some random data.
-        addSomeRandomProducts();
+        //addSomeRandomProducts();
         System.out.println("connection is ready...");
     }
 
@@ -51,9 +51,9 @@ public class db {
 
     public void addProduct(String name, double price, int quantity) throws SQLException {
         PreparedStatement pstat = con.prepareStatement("insert into products (name,price,quantity) values (?,?,?)");
-        pstat.setString(0, name);
-        pstat.setDouble(1, price);
-        pstat.setInt(2, quantity);
+        pstat.setString(1, name);
+        pstat.setDouble(2, price);
+        pstat.setInt(3, quantity);
         pstat.execute();
     }
 
@@ -71,16 +71,16 @@ public class db {
 
     public void updateProduct(int id, String name, double price, int quantity) throws SQLException {
         PreparedStatement pstat = con.prepareStatement("update products set name=?, price=?, quantity=? where id=?");
-        pstat.setString(0, name);
-        pstat.setDouble(1, price);
-        pstat.setInt(2, quantity);
-        pstat.setInt(3, id);
+        pstat.setString(1, name);
+        pstat.setDouble(2, price);
+        pstat.setInt(3, quantity);
+        pstat.setInt(4, id);
         pstat.execute();
     }
 
     public void removeProduct(int id) throws SQLException {
         PreparedStatement pstat = con.prepareStatement("delete from products where id=?");
-        pstat.setInt(0, id);
+        pstat.setInt(1, id);
         pstat.execute();
     }
 
@@ -97,7 +97,7 @@ public class db {
                 //3-create statement
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 //4- use statement to execute any sql commands
-                stat.execute("create table if not exists products (ID int primary key, name char(20),price double, quantity int)");
+                stat.execute("create table if not exists products (ID int primary key AUTO_INCREMENT, name char(20),price double, quantity int)");
                 return true;
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(db.class.getName()).log(Level.SEVERE, null, ex);

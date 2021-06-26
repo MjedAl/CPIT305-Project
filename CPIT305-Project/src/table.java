@@ -37,6 +37,22 @@ public class table extends javax.swing.JFrame {
     private ArrayList<product> productsInCart = new ArrayList<product>();
     // obj of the cart class
     private tableCart cart;
+    // keep track of current order list.
+    // 
+    private ArrayList<trackOrderPage> orderPages = new ArrayList<trackOrderPage>();
+
+    public void addNewTrackPage(trackOrderPage page) {
+        this.orderPages.add(page);
+    }
+
+    public void removeTrackPage(int orderNumber) {
+        for (int i = 0; i < orderPages.size(); i++) {
+            if (orderPages.get(i).orderNumber == orderNumber){
+                orderPages.remove(i);
+                break;
+            }
+        }
+    }
 
     public table(Socket connection, Scanner scanner, PrintWriter writer, String tableID) {
         this.connection = connection;
@@ -67,7 +83,7 @@ public class table extends javax.swing.JFrame {
                     // product that just got update is not available, so check if it was in the cart remove it.
                     for (int j = 0; j < productsInCart.size(); j++) {
                         if (productsInCart.get(j).getId() == this.products.get(i).getId()) {
-                            JOptionPane.showMessageDialog(null, "Sorrt we removed the prouct "+productsInCart.get(j).getName()+" from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "Sorrt we removed the prouct " + productsInCart.get(j).getName() + " from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 }
@@ -84,9 +100,14 @@ public class table extends javax.swing.JFrame {
         int[] productsIndxes = productsTable.getSelectedRows();
         for (int i = 0; i < productsIndxes.length; i++) {
             productsInCart.add(new product((Integer) productsTable.getValueAt(productsIndxes[i], 0),
-                    (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 0x2), 0));
+                    (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 2), 1));
         }
         cartBtn.setText("Cart (" + productsInCart.size() + ")");
+    }
+
+    public void resetCart() {
+        this.productsInCart = new ArrayList<product>();
+        cartBtn.setText("Cart (0)");
     }
 
     public void updateCartBtn(String text) {
@@ -107,6 +128,7 @@ public class table extends javax.swing.JFrame {
         addBtn = new javax.swing.JButton();
         scrollPane = new javax.swing.JScrollPane();
         productsTable = new javax.swing.JTable();
+        currentOrdersBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -164,6 +186,14 @@ public class table extends javax.swing.JFrame {
         });
         scrollPane.setViewportView(productsTable);
 
+        currentOrdersBtn.setText("Current Orders (0)");
+        currentOrdersBtn.setToolTipText("");
+        currentOrdersBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                currentOrdersBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -177,10 +207,11 @@ public class table extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(refreshBtn))
                     .addComponent(addBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(cartBtn))
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE))
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(currentOrdersBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(cartBtn)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -196,9 +227,11 @@ public class table extends javax.swing.JFrame {
                 .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
-                .addComponent(cartBtn)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(currentOrdersBtn)
+                    .addComponent(cartBtn))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -222,6 +255,10 @@ public class table extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(null, "List updated", "Done", JOptionPane.DEFAULT_OPTION);
 
     }//GEN-LAST:event_refreshBtnActionPerformed
+
+    private void currentOrdersBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_currentOrdersBtnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_currentOrdersBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -261,10 +298,12 @@ public class table extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
     private javax.swing.JButton cartBtn;
+    private javax.swing.JButton currentOrdersBtn;
     private javax.swing.JButton leaveBtn;
     private javax.swing.JTable productsTable;
     private javax.swing.JButton refreshBtn;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel tableNumLabel;
     // End of variables declaration//GEN-END:variables
+
 }

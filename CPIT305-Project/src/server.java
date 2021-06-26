@@ -73,6 +73,7 @@ public class server {
             Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
 }
 
 class connectionHandler extends Thread {
@@ -96,19 +97,53 @@ class connectionHandler extends Thread {
         }
     }
 
-    public boolean sendOrderToKitchen(String order) {
+    public boolean validateOrder(String order) {
+        return true;
+    }
+
+    public void reserveOrderQuantites(String order) {
+
+    }
+
+    public void unreserverOrderQuantites(String order) {
+
+    }
+
+    public int sendOrderToKitchen(String order) {
         // check if order is valid first..
         // 
-        // send order to the kitchen socket .....
-        // order is valid:
-        //      add it to the server hash map of orders and table id
-        server.ordersWithTableID.put(server.orderID, this.tableNumber);
-        server.orderID++;
-        // 
-        // 
-        // table id # order # time
+        if (validateOrder(order)) {
+            // send order to the kitchen socket .....
+            // order is valid:
+            // add it to the server hash map of orders and table id
+            int currentOrderNum = server.orderID;
+            server.ordersWithTableID.put(currentOrderNum, this.tableNumber);
+            server.orderID++;
+            // table id # order # time # order ID
+            PrintWriter wrt = server.theKitchen.wrt;
+            wrt.println("newOrder#" + this.tableNumber + "#" + order.replace("order:", "") + "#" + "orderTime" + "#" + currentOrderNum);
+            return currentOrderNum;
+        }
+        return -1;
+    }
+
+    public boolean sendUpdatedOrderToKitchen(String line) {
+        String order = line.split(":")[1];
+        String orderNumber = line.split(":")[2];
+        if (validateOrder(order)) {
+            PrintWriter wrt = server.theKitchen.wrt;
+            wrt.println("updatedOrder#" + this.tableNumber + "#" + order.replace("order:", "") + "#" + "time" + "#" + orderNumber);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean RemoveOrderFromKitchen(String line) {
+        String order = line.split(":")[1];
+        String orderNumber = line.split(":")[2];
+        //unreserverOrderQuantites(order);
         PrintWriter wrt = server.theKitchen.wrt;
-        wrt.println(this.tableNumber + "#" + order.replace("order:", "") + "#" + "time");
+        wrt.println("removeOrder#" + orderNumber);
         return true;
     }
 
@@ -186,14 +221,20 @@ class connectionHandler extends Thread {
                     } else {
                         // other command
                         if (!isKitchen) {
-                            if (line.startsWith("order")) {
-                                if (sendOrderToKitchen(line)) {
-                                    wrt.println("accepted");
+                            if (line.startsWith("order:")) {
+                                int orderID = sendOrderToKitchen(line);
+                                if (orderID != -1) {
+                                    wrt.println("accepted:" + orderID);
                                 } else {
                                     wrt.println("failed");
                                 }
-                            } else if (line.startsWith("orderUpdate")) {
+                            } else if (line.startsWith("orderUpdate:")) {
                                 // client want to update his order before it got approved
+                                boolean status = sendUpdatedOrderToKitchen(line);
+                                // brbr
+                            } else if (line.startsWith("orderDelete:")) {
+                                // client want to remove his order before it got approved
+                                boolean status = RemoveOrderFromKitchen(line);
                                 // brbr
                             } else {
                                 wrt.println("rejected:0:unknown operation");
@@ -216,7 +257,7 @@ class connectionHandler extends Thread {
                                 connectionHandler tableCon = server.tableConnections.get(tableID);
                                 // send the update to the table
                                 tableCon.wrt.println("orderStatusUpdate:" + status + ":" + orderID);
-                            }else{
+                            } else {
                                 // else kitchen might want to update something on the menu
                                 // after we do the update
                                 // we give the updated menu to everyone

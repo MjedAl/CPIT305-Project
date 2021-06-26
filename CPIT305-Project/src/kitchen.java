@@ -2,6 +2,7 @@
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /*
@@ -30,17 +31,37 @@ class listenForOrders extends Thread {
     @Override
     public void run() {
         String line;
+        System.out.println("Kitchen is lisining for commands.");
         while (true) {
+            
             // recevied new order.
-            // table id # order # time
+            // newOrder # table id # order # time
             line = scanner.nextLine();
             System.out.println(line);
             String[] orderDetails = line.split("\\#");
             DefaultTableModel model = (DefaultTableModel) kitchenGUI.ordersTable.getModel();
-            model.addRow(new Object[]{orderDetails[0], orderDetails[1], orderDetails[2]});
+            if (orderDetails[0].equalsIgnoreCase("newOrder")) {
+                model.addRow(new Object[]{orderDetails[1], orderDetails[2].replaceAll("\\+", "\n"), orderDetails[3], orderDetails[4], "Recevied"});
+            } else if (orderDetails[0].equalsIgnoreCase("updateOrder")) {
+                // we look for the row of the order that we want to update
+                for (int i = 0; i < kitchenGUI.ordersTable.getRowCount(); i++) {
+                    if (((String) kitchenGUI.ordersTable.getValueAt(i, 3)).equalsIgnoreCase(orderDetails[3])) {
+                        // update the order
+                        kitchenGUI.ordersTable.setValueAt(orderDetails[2].replaceAll("\\+", "\n"), i, 1);
+                        break;
+                    }
+                }
+            } else if (orderDetails[0].equalsIgnoreCase("removeOrder")) {
+                for (int i = 0; i < kitchenGUI.ordersTable.getRowCount(); i++) {
+                    if (((String) kitchenGUI.ordersTable.getValueAt(i, 3)).equalsIgnoreCase(orderDetails[1])) {
+                        // remove the order
+                        model.removeRow(i);
+                        break;
+                    }
+                }
+            }
         }
     }
-
 }
 
 public class kitchen extends javax.swing.JFrame {
@@ -79,6 +100,8 @@ public class kitchen extends javax.swing.JFrame {
         editMenuBtn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         ordersTable = new javax.swing.JTable();
+        confirmOrderBtn = new javax.swing.JButton();
+        confirmOrderBtn1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -95,10 +118,34 @@ public class kitchen extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Table number", "Order", "Order time"
+                "Table number", "Order", "Order time", "Order ID", "Status"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(ordersTable);
+
+        confirmOrderBtn.setText("Confirm order");
+        confirmOrderBtn.setToolTipText("");
+        confirmOrderBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmOrderBtnActionPerformed(evt);
+            }
+        });
+
+        confirmOrderBtn1.setText("Reject order");
+        confirmOrderBtn1.setToolTipText("");
+        confirmOrderBtn1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmOrderBtn1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -108,9 +155,14 @@ public class kitchen extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 302, Short.MAX_VALUE)
+                        .addGap(0, 558, Short.MAX_VALUE)
                         .addComponent(editMenuBtn))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(confirmOrderBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(confirmOrderBtn1, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -119,8 +171,12 @@ public class kitchen extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(editMenuBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(confirmOrderBtn1)
+                    .addComponent(confirmOrderBtn))
+                .addContainerGap(109, Short.MAX_VALUE))
         );
 
         pack();
@@ -130,6 +186,36 @@ public class kitchen extends javax.swing.JFrame {
         // TODO add your handling code here:
         System.out.println("okkk");
     }//GEN-LAST:event_editMenuBtnActionPerformed
+
+    private void confirmOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOrderBtnActionPerformed
+
+        // check selected status of recevied then we can aprove it        
+        // if aproved or above print already approved
+        // format : orderStatusUpdate:X:Y
+        // X == status
+        // status : 1 means aproved and they are working on it
+        // status : 2 means that the order is on it's way
+        // Y == order number
+        // resp either confirmed or not.
+        // get selected id and sent to server
+        int[] selectedIndexes = ordersTable.getSelectedRows();
+        for (int i = 0; i < selectedIndexes.length; i++) {
+            //
+            if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Recevied")) {
+                // we can approve it
+                String orderID = (String) ordersTable.getValueAt(selectedIndexes[i], 3);
+                writer.println("orderStatusUpdate:1:" + orderID);
+                ordersTable.setValueAt("Confirmed", selectedIndexes[i], 4);
+                //
+            } else {
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " has already been approved", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_confirmOrderBtnActionPerformed
+
+    private void confirmOrderBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOrderBtn1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_confirmOrderBtn1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -167,6 +253,8 @@ public class kitchen extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton confirmOrderBtn;
+    private javax.swing.JButton confirmOrderBtn1;
     private javax.swing.JButton editMenuBtn;
     private javax.swing.JScrollPane jScrollPane1;
     public javax.swing.JTable ordersTable;
