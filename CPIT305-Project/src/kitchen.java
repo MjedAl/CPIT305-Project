@@ -1,15 +1,16 @@
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 /**
  *
  * @author Mjed
@@ -33,11 +34,10 @@ class listenForOrders extends Thread {
         String line;
         System.out.println("Kitchen is lisining for commands.");
         while (true) {
-            
             // recevied new order.
             // newOrder # table id # order # time
             line = scanner.nextLine();
-            System.out.println(line);
+            System.out.println("Command is : " + line);
             String[] orderDetails = line.split("\\#");
             DefaultTableModel model = (DefaultTableModel) kitchenGUI.ordersTable.getModel();
             if (orderDetails[0].equalsIgnoreCase("newOrder")) {
@@ -59,6 +59,29 @@ class listenForOrders extends Thread {
                         break;
                     }
                 }
+            } else if (orderDetails[0].equalsIgnoreCase("updateProducts")) {
+                //server wants us to update the products list
+                System.out.println("ok updating products");
+                writer.println("products");
+                // 
+                try {
+                    System.out.println("before stuck");
+                    System.out.println(kitchenGUI.connection.getInputStream().available());
+                    ObjectInputStream objectInputStream = new ObjectInputStream(kitchenGUI.connection.getInputStream());
+                    System.out.println("after stuck");
+                    this.kitchenGUI.setProducts((ArrayList<product>) objectInputStream.readObject());
+                    System.out.println(kitchenGUI.connection.getInputStream().available());
+
+                } catch (IOException ex) {
+                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                System.out.println(this.kitchenGUI.products.size());
+                System.out.println("done?");
+                // flush the stream
+                //kitchenGUI.connection.getInputStream();
+                this.kitchenGUI.refreshList();
             }
         }
     }
@@ -73,21 +96,77 @@ public class kitchen extends javax.swing.JFrame {
         initComponents();
     }
 
-    private Socket connection;
+    public Socket connection;
     private Scanner scanner;
     private PrintWriter writer;
     private listenForOrders ordersThread;
+    private menu menueGUI;
+    ArrayList<product> products;
 
     public kitchen(Socket connection, Scanner scanner, PrintWriter writer) {
         this.connection = connection;
         this.scanner = scanner;
         this.writer = writer;
         initComponents();
-        this.setVisible(true);
-
         // create a thread that will keep lisineing for orders and give it the blah blah
+        this.menueGUI = new menu(connection, scanner, writer, products);
+
+        //refreshList();
+        System.out.println("want prod");
+        writer.println("products");
+        System.out.println("sent req");
+        ObjectInputStream objectInputStream;
+        try {
+            System.out.println("wait for obj");
+            objectInputStream = new ObjectInputStream(this.connection.getInputStream());
+            System.out.println("waiting");
+            this.products = (ArrayList<product>) objectInputStream.readObject();
+//            objectInputStream.close();
+            this.menueGUI.setProducts(products);
+            this.menueGUI.refreshList();
+        } catch (IOException ex) {
+            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         this.ordersThread = new listenForOrders(this, connection, scanner, writer);
         ordersThread.start();
+
+        this.setVisible(true);
+    }
+
+    public void setProducts(ArrayList<product> products) {
+        this.products = products;
+    }
+
+//    public void refreshList() {
+//        //ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
+//        //this.products = (ArrayList<product>) objectInputStream.readObject();
+//        // call the update method on the menu class
+//        this.menueGUI.setProducts(products);
+//        this.menueGUI.refreshList();
+//    }
+    public void refreshList() {
+        // requsting the updated list from the db
+//        System.out.println("want prod");
+//        writer.println("products");
+//        System.out.println("sent req");
+//        ObjectInputStream objectInputStream;
+//        try {
+//            System.out.println("wait for obj");
+//            objectInputStream = new ObjectInputStream(this.connection.getInputStream());
+//            System.out.println("waiting");
+//            this.products = (ArrayList<product>) objectInputStream.readObject();
+//            objectInputStream.close();
+        this.menueGUI.setProducts(products);
+        this.menueGUI.refreshList();
+//        } catch (IOException ex) {
+//            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (ClassNotFoundException ex) {
+//            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+
     }
 
     /**
@@ -184,7 +263,7 @@ public class kitchen extends javax.swing.JFrame {
 
     private void editMenuBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuBtnActionPerformed
         // TODO add your handling code here:
-        System.out.println("okkk");
+        this.menueGUI.setVisible(true);
     }//GEN-LAST:event_editMenuBtnActionPerformed
 
     private void confirmOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOrderBtnActionPerformed

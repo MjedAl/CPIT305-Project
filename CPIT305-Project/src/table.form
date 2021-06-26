@@ -29,8 +29,7 @@
                   <Component id="tableNumLabel" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="leaveBtn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="refreshBtn" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Component id="addBtn" alignment="0" max="32767" attributes="0"/>
                   <Component id="scrollPane" pref="557" max="32767" attributes="0"/>
@@ -50,10 +49,7 @@
               <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
               <Component id="tableNumLabel" min="-2" pref="42" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="leaveBtn" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="refreshBtn" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="leaveBtn" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="scrollPane" min="-2" pref="204" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -79,15 +75,6 @@
         <Property name="text" type="java.lang.String" value="Leave"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="refreshBtn">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Refresh"/>
-        <Property name="toolTipText" type="java.lang.String" value=""/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshBtnActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="cartBtn">
       <Properties>

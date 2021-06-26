@@ -28,50 +28,69 @@ public class server {
     public static HashMap<Integer, Integer> ordersWithTableID = new HashMap<Integer, Integer>();
     public static int orderID = 0;
 
+    public static ArrayList<product> products;
+
     //..
     public static void main(String[] args) throws IOException {
-        //1-create server socket
-        ServerSocket srv = new ServerSocket(1900);
-        System.out.println("Server starting...");
-        System.out.println("Getting DB...");
-        theDB = db.getInstance();
-        //
-        connectionHandler handler;
-        while (true) {
-            System.out.println("Waiting for connection...");
-            // everytime we have new connection make new thread for it.
-            Socket soc = srv.accept();
-            handler = new connectionHandler(soc);
-            handler.start();
-            connections.add(handler);
-            System.out.println("Connection recevied and thread was made for it...");
-        }
-    }
-
-    // The issue iss .... what if client is waiting for some answer on something and at the same time we push update products ??? pfff FUCK THIS
-    public static void updateProductsForALl() {
-        // get the latest products
-        // tell client to excpect updated products list comnig
-        // send the products
-        ArrayList<product> products;
         try {
-            products = server.theDB.getProducts();
-            ObjectOutputStream objectOutputStream;
-            for (int i = 0; i < connections.size(); i++) {
-                connections.get(i).wrt.println("updateProducts");
-                try {
-                    objectOutputStream = new ObjectOutputStream(connections.get(i).connection.getOutputStream());
-                    objectOutputStream.writeObject(products);
-
-                } catch (IOException ex) {
-                    Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            //1-create server socket
+            ServerSocket srv = new ServerSocket(1900);
+            System.out.println("Server starting...");
+            System.out.println("Getting DB...");
+            theDB = db.getInstance();
+            System.out.println("Getting list of products...");
+            server.products = theDB.getProducts();
+            //
+            connectionHandler handler;
+            while (true) {
+                System.out.println("Waiting for connection...");
+                // everytime we have new connection make new thread for it.
+                Socket soc = srv.accept();
+                handler = new connectionHandler(soc);
+                handler.start();
+                connections.add(handler);
+                System.out.println("Connection recevied and thread was made for it...");
             }
         } catch (dbNotSettedUpException ex) {
             Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    // The issue iss .... what if client is waiting for some answer on something and at the same time we push update products ??? pfff FUCK THIS
+    // something changed in the db so first we update the list for our self before telling everyone to update their list
+    public static void updateProductsForALl() {
+        try {
+            server.products = server.theDB.getProducts();
+        } catch (dbNotSettedUpException ex) {
+            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        // tell all clients to update their products list
+        // tell client to excpect updated products list comnig
+        // send the products
+//        ArrayList<product> products;
+//        try {
+//            products = server.theDB.getProducts();
+//            ObjectOutputStream objectOutputStream;
+        for (int i = 0; i < connections.size(); i++) {
+            connections.get(i).wrt.println("updateProducts");
+//                try {
+//                    objectOutputStream = new ObjectOutputStream(connections.get(i).connection.getOutputStream());
+//                    //objectOutputStream.flush();
+//                    objectOutputStream.writeObject(products);
+//                    objectOutputStream.flush();
+//                } catch (IOException ex) {
+//                    Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+        }
+//        } catch (dbNotSettedUpException ex) {
+//            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (SQLException ex) {
+//            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
 }
@@ -194,6 +213,16 @@ class connectionHandler extends Thread {
                 // store the connection in the server hash table
                 server.tableConnections.put(tableNumber, this);
                 System.out.println("Connection stored in the server hashmap");
+                // give the client the latest menu
+                // get it throught the db
+//                ArrayList<product> products = server.theDB.getProducts();
+                // send it via object stream
+                // we let the client know that the products has 
+                //wrt.println("updateProducts");
+//                System.out.println("Sending products to the new client");
+//                ObjectOutputStream objectOutputStream = new ObjectOutputStream(this.connection.getOutputStream());
+//                objectOutputStream.writeObject(products);
+//                System.out.println("Done sending");
                 while (true) {
                     // waiting for commands.
                     line = scan.nextLine();
@@ -204,20 +233,14 @@ class connectionHandler extends Thread {
                     if (line.equalsIgnoreCase("exit")) {
                         break;
                     } else if (line.startsWith("products")) {
-                        try {
-                            // client want to get the list of products
-                            // get it throught the db
-                            ArrayList<product> products = server.theDB.getProducts();
-                            // send it via object stream
-                            ObjectOutputStream objectOutputStream = new ObjectOutputStream(this.connection.getOutputStream());
-                            objectOutputStream.writeObject(products);
-                        } catch (dbNotSettedUpException ex) {
-                            wrt.println("failed:0:server error");
-                            // print log
-                        } catch (SQLException ex) {
-                            wrt.println("failed:0:server error");
-                            // print log
-                        }
+                        // client want to get the list of products
+                        // get it throught the db
+                        // send it via object stream
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(this.connection.getOutputStream());
+                        objectOutputStream.flush();
+                        objectOutputStream.writeObject(server.products);
+//                       objectOutputStream.close();
+
                     } else {
                         // other command
                         if (!isKitchen) {
@@ -239,7 +262,6 @@ class connectionHandler extends Thread {
                             } else {
                                 wrt.println("rejected:0:unknown operation");
                             }
-                            // send it to table???
                         } else {
                             // kitchen recevied some order and they want to change it's status
                             if (line.startsWith("orderStatusUpdate")) {
@@ -257,6 +279,26 @@ class connectionHandler extends Thread {
                                 connectionHandler tableCon = server.tableConnections.get(tableID);
                                 // send the update to the table
                                 tableCon.wrt.println("orderStatusUpdate:" + status + ":" + orderID);
+                            } else if (line.startsWith("addProduct")) {
+                                String name = (line.split(":")[1]);
+                                double price = Double.parseDouble(line.split(":")[2]);
+                                int quantity = Integer.parseInt(line.split(":")[3]);
+                                server.theDB.addProduct(name, price, quantity);
+                                // tell everyone to update their list
+                                server.updateProductsForALl();
+                            } else if (line.startsWith("updateProduct")) {
+                                int id = Integer.parseInt(line.split(":")[1]);
+                                String name = (line.split(":")[2]);
+                                double price = Double.parseDouble(line.split(":")[3]);
+                                int quantity = Integer.parseInt(line.split(":")[4]);
+                                server.theDB.updateProduct(id, name, price, quantity);
+                                // tell everyone to update their list
+                                server.updateProductsForALl();
+                            } else if (line.startsWith("deleteProduct")) {
+                                int id = Integer.parseInt(line.split(":")[1]);
+                                server.theDB.removeProduct(id);
+                                // tell everyone to update their list
+                                server.updateProductsForALl();
                             } else {
                                 // else kitchen might want to update something on the menu
                                 // after we do the update
@@ -272,6 +314,8 @@ class connectionHandler extends Thread {
             }
 
         } catch (IOException ex) {
+            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
             Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
 

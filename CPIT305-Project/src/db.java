@@ -41,11 +41,12 @@ public class db {
         if (!setup) {
             throw new dbNotSettedUpException();
         }
-        ResultSet products = stat.executeQuery("select * from products");
+        ResultSet resultSet = stat.executeQuery("select * from products");
         ArrayList<product> productsObj = new ArrayList<product>();
-        while (products.next()) {
-            productsObj.add(new product(products.getInt("id"), products.getString("name"), products.getDouble("price"), products.getInt("quantity")));
+        while (resultSet.next()) {
+            productsObj.add(new product(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getDouble("price"), resultSet.getInt("quantity")));
         }
+        System.out.println("Products returned");
         return productsObj;
     }
 
@@ -70,6 +71,7 @@ public class db {
     }
 
     public void updateProduct(int id, String name, double price, int quantity) throws SQLException {
+        System.out.println("here");
         PreparedStatement pstat = con.prepareStatement("update products set name=?, price=?, quantity=? where id=?");
         pstat.setString(1, name);
         pstat.setDouble(2, price);
