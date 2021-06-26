@@ -39,7 +39,6 @@ public class menu extends javax.swing.JFrame {
     public void setProducts(ArrayList<product> products) {
         this.products = products;
     }
-    
 
     public menu(Socket connection, Scanner scanner, PrintWriter writer, ArrayList<product> products) {
         this.connection = connection;
@@ -47,6 +46,7 @@ public class menu extends javax.swing.JFrame {
         this.writer = writer;
         this.products = products;
         initComponents();
+        addProductPanel.setVisible(false);
         this.setVisible(false);
     }
 
@@ -240,9 +240,14 @@ public class menu extends javax.swing.JFrame {
             // sned product to server
             // add more validators here before sending
             writer.println("addProduct:" + name + ":" + price + ":" + quantity);
-            // clear fileds
-
+            // clear fileds and hide panel
+            productName.setText("");
+            productPrice.setText("");
+            productQuantity.setText("");
+            addProductPanel.setVisible(false);
             // show added
+            JOptionPane.showMessageDialog(null, "Product has been added", "OK", JOptionPane.DEFAULT_OPTION);
+
         } catch (NumberFormatException e) {
             // print something
         }
