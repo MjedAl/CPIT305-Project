@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-
 /**
  *
  * @author Mjed
@@ -61,26 +60,18 @@ class listenForOrders extends Thread {
                 }
             } else if (orderDetails[0].equalsIgnoreCase("updateProducts")) {
                 //server wants us to update the products list
-                System.out.println("ok updating products");
+                System.out.println("Server wants us to update the products list.. okay requesting latest version..");
                 writer.println("products");
                 // 
                 try {
-                    System.out.println("before stuck");
-                    System.out.println(kitchenGUI.connection.getInputStream().available());
                     ObjectInputStream objectInputStream = new ObjectInputStream(kitchenGUI.connection.getInputStream());
-                    System.out.println("after stuck");
                     this.kitchenGUI.setProducts((ArrayList<product>) objectInputStream.readObject());
-                    System.out.println(kitchenGUI.connection.getInputStream().available());
-
                 } catch (IOException ex) {
                     Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                System.out.println(this.kitchenGUI.products.size());
-                System.out.println("done?");
-                // flush the stream
-                //kitchenGUI.connection.getInputStream();
+                // refresh the table in the view
                 this.kitchenGUI.refreshList();
             }
         }
@@ -108,31 +99,25 @@ public class kitchen extends javax.swing.JFrame {
         this.scanner = scanner;
         this.writer = writer;
         initComponents();
-        // create a thread that will keep lisineing for orders and give it the blah blah
+        // create a the class for the menu GUI
         this.menueGUI = new menu(connection, scanner, writer, products);
 
-        //refreshList();
-        System.out.println("want prod");
+        // request latest version of products
         writer.println("products");
-        System.out.println("sent req");
         ObjectInputStream objectInputStream;
         try {
-            System.out.println("wait for obj");
             objectInputStream = new ObjectInputStream(this.connection.getInputStream());
-            System.out.println("waiting");
             this.products = (ArrayList<product>) objectInputStream.readObject();
-//            objectInputStream.close();
-            this.menueGUI.setProducts(products);
+            this.menueGUI.setProducts(products);// needed?
             this.menueGUI.refreshList();
         } catch (IOException ex) {
             Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        // create a thread that will keep lisineing for orders.
         this.ordersThread = new listenForOrders(this, connection, scanner, writer);
         ordersThread.start();
-
         this.setVisible(true);
     }
 
@@ -140,33 +125,9 @@ public class kitchen extends javax.swing.JFrame {
         this.products = products;
     }
 
-//    public void refreshList() {
-//        //ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
-//        //this.products = (ArrayList<product>) objectInputStream.readObject();
-//        // call the update method on the menu class
-//        this.menueGUI.setProducts(products);
-//        this.menueGUI.refreshList();
-//    }
     public void refreshList() {
-        // requsting the updated list from the db
-//        System.out.println("want prod");
-//        writer.println("products");
-//        System.out.println("sent req");
-//        ObjectInputStream objectInputStream;
-//        try {
-//            System.out.println("wait for obj");
-//            objectInputStream = new ObjectInputStream(this.connection.getInputStream());
-//            System.out.println("waiting");
-//            this.products = (ArrayList<product>) objectInputStream.readObject();
-//            objectInputStream.close();
         this.menueGUI.setProducts(products);
         this.menueGUI.refreshList();
-//        } catch (IOException ex) {
-//            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (ClassNotFoundException ex) {
-//            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-
     }
 
     /**
@@ -262,7 +223,6 @@ public class kitchen extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void editMenuBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuBtnActionPerformed
-        // TODO add your handling code here:
         this.menueGUI.setVisible(true);
     }//GEN-LAST:event_editMenuBtnActionPerformed
 
