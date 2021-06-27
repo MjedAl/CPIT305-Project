@@ -7,11 +7,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 /**
  *
  * @author Mjed
@@ -173,20 +169,16 @@ public class tableCart extends javax.swing.JFrame {
             // remove the last " + "
             productsStr = productsStr.substring(0, productsStr.length() - 3);
 
-            System.out.println(productsStr);
             writer.println(productsStr);
 
 //            String response = scanner.nextLine();
             String response = "";
-            System.out.println("before");
             while (theTable.ServerReponse.equalsIgnoreCase("")) {
                 // keep waiting until we get response from the other thread
                 response = theTable.ServerReponse;
             }
             theTable.ServerReponse="";
-            System.out.println("after");
 
-            System.out.println(response);
             int orderNumber = -1;
 
             if (response.startsWith("accepted")) {
@@ -222,7 +214,7 @@ public class tableCart extends javax.swing.JFrame {
         for (int i = 0; i < productsIndxes.length; i++) {
             // remove the selected product from the array list
             // first we need to find the product in the cart
-            
+
             //
             productsInCart.remove(productsIndxes[i]);
             

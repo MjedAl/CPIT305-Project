@@ -60,21 +60,8 @@ class listenForServerUpdates extends Thread {
             } else if (line.startsWith("rejected")) {
                 tableGUI.ServerReponse = line;
             } else if (line.startsWith("updateProducts")) {
-                System.out.println("Okay updating list");
                 // server wants us to udpate the products lsit
-//                System.out.println("ready to take products");
-//                try {
-//                    ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
-//                    this.tableGUI.setProducts((ArrayList<product>) objectInputStream.readObject());
-//                    System.out.println("okay done");
-//                    System.out.println(this.tableGUI.products.size());
-//                } catch (IOException ex) {
-//                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
-//                } catch (ClassNotFoundException ex) {
-//                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//                System.out.println("Done?");
-
+                System.out.println("Okay updating list");
                 writer.println("products");
                 try {
                     ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
@@ -84,7 +71,6 @@ class listenForServerUpdates extends Thread {
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
                 this.tableGUI.refreshListView();
             }
         }
@@ -113,7 +99,6 @@ public class table extends javax.swing.JFrame {
     public String ServerReponse = "";
     // ^ to keep track of server latest response
 
-    // 
     public ArrayList<trackOrderPage> orderPages = new ArrayList<trackOrderPage>();
 
     public void addNewTrackPage(trackOrderPage page) {
@@ -148,28 +133,6 @@ public class table extends javax.swing.JFrame {
         this.products = products;
     }
 
-//    public void refreshList() {
-//        //ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
-//        //this.products = (ArrayList<product>) objectInputStream.readObject();
-//        System.out.println("kk");
-//        DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
-//        // reset the table.
-//        model.setRowCount(0);
-//        for (int i = 0; i < this.products.size(); i++) {
-//            // only add products that are available
-//            if (this.products.get(i).getQuantity() > 0) {
-//                model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice()});
-//            } else {
-//                // product that just got update is not available, so check if it was in the cart remove it.
-//                for (int j = 0; j < productsInCart.size(); j++) {
-//                    if (productsInCart.get(j).getId() == this.products.get(i).getId()) {
-//                        JOptionPane.showMessageDialog(null, "Sorry we removed the prouct " + productsInCart.get(j).getName() + " from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
-//                    }
-//                }
-//            }
-//        }
-//
-//    }
     public void refreshListView() {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);

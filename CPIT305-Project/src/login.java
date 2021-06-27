@@ -73,20 +73,17 @@ public class login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void kitchenBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kitchenBtnActionPerformed
-        // TODO add your handling code here:
         connectToSocket(true);
     }//GEN-LAST:event_kitchenBtnActionPerformed
 
     private void tableBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableBtnActionPerformed
-        // TODO add your handling code here:
         connectToSocket(false);
     }//GEN-LAST:event_tableBtnActionPerformed
 
     private void connectToSocket(boolean kitchen) {
-        // 1-
         try {
             Socket soc = new Socket("localhost", 1900);
-            //2- 
+
             Scanner scan = new Scanner(soc.getInputStream());
             PrintWriter wrt = new PrintWriter(soc.getOutputStream(), true);
             String tableNum = "";
@@ -107,16 +104,14 @@ public class login extends javax.swing.JFrame {
                     soc.close();
                 }
             } else {
-                // accepted, TODO redirect user to his own new screen with the same params (socket Input,Output streams).
                 System.out.println("Accepted. you will be redirected");
                 if (kitchen) {
-                    kitchen kitchenGUI = new kitchen(soc, scan, wrt);
+                    new kitchen(soc, scan, wrt);
                     dispose();
                 } else {
-                    table tableGUI = new table(soc, scan, wrt, tableNum);
+                    new table(soc, scan, wrt, tableNum);
                     dispose();
                 }
-
             }
         } catch (IOException e) {
 
