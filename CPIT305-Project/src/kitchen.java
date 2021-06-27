@@ -1,14 +1,15 @@
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author Mjed
@@ -30,17 +31,51 @@ class listenForOrders extends Thread {
     @Override
     public void run() {
         String line;
+        System.out.println("Kitchen is lisining for commands.");
         while (true) {
             // recevied new order.
-            // table id # order # time
+            // newOrder # table id # order # time
             line = scanner.nextLine();
-            System.out.println(line);
+            System.out.println("Command is : " + line);
             String[] orderDetails = line.split("\\#");
             DefaultTableModel model = (DefaultTableModel) kitchenGUI.ordersTable.getModel();
-            model.addRow(new Object[]{orderDetails[0], orderDetails[1], orderDetails[2]});
+            if (orderDetails[0].equalsIgnoreCase("newOrder")) {
+                model.addRow(new Object[]{orderDetails[1], orderDetails[2].replaceAll("\\+", "\n"), orderDetails[3], orderDetails[4], "Recevied"});
+            } else if (orderDetails[0].equalsIgnoreCase("updateOrder")) {
+                // we look for the row of the order that we want to update
+                for (int i = 0; i < kitchenGUI.ordersTable.getRowCount(); i++) {
+                    if (((String) kitchenGUI.ordersTable.getValueAt(i, 3)).equalsIgnoreCase(orderDetails[4])) {
+                        // update the order
+                        kitchenGUI.ordersTable.setValueAt(orderDetails[2].replaceAll("\\+", "\n"), i, 1);
+                        break;
+                    }
+                }
+            } else if (orderDetails[0].equalsIgnoreCase("removeOrder")) {
+                for (int i = 0; i < kitchenGUI.ordersTable.getRowCount(); i++) {
+                    if (((String) kitchenGUI.ordersTable.getValueAt(i, 3)).equalsIgnoreCase(orderDetails[1])) {
+                        // remove the order
+                        model.removeRow(i);
+                        break;
+                    }
+                }
+            } else if (orderDetails[0].equalsIgnoreCase("updateProducts")) {
+                //server wants us to update the products list
+                System.out.println("Server wants us to update the products list.. okay requesting latest version..");
+                writer.println("products");
+                // 
+                try {
+                    ObjectInputStream objectInputStream = new ObjectInputStream(kitchenGUI.connection.getInputStream());
+                    this.kitchenGUI.setProducts((ArrayList<product>) objectInputStream.readObject());
+                } catch (IOException ex) {
+                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                // refresh the table in the view
+                this.kitchenGUI.refreshList();
+            }
         }
     }
-
 }
 
 public class kitchen extends javax.swing.JFrame {
@@ -52,21 +87,47 @@ public class kitchen extends javax.swing.JFrame {
         initComponents();
     }
 
-    private Socket connection;
+    public Socket connection;
     private Scanner scanner;
     private PrintWriter writer;
     private listenForOrders ordersThread;
+    private menu menueGUI;
+    ArrayList<product> products;
 
     public kitchen(Socket connection, Scanner scanner, PrintWriter writer) {
         this.connection = connection;
         this.scanner = scanner;
         this.writer = writer;
         initComponents();
-        this.setVisible(true);
+        // create a the class for the menu GUI
+        this.menueGUI = new menu(connection, scanner, writer, products);
 
-        // create a thread that will keep lisineing for orders and give it the blah blah
+        // request latest version of products
+        writer.println("products");
+        ObjectInputStream objectInputStream;
+        try {
+            objectInputStream = new ObjectInputStream(this.connection.getInputStream());
+            this.products = (ArrayList<product>) objectInputStream.readObject();
+            this.menueGUI.setProducts(products);// needed?
+            this.menueGUI.refreshList();
+        } catch (IOException ex) {
+            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        // create a thread that will keep lisineing for orders.
         this.ordersThread = new listenForOrders(this, connection, scanner, writer);
         ordersThread.start();
+        this.setVisible(true);
+    }
+
+    public void setProducts(ArrayList<product> products) {
+        this.products = products;
+    }
+
+    public void refreshList() {
+        this.menueGUI.setProducts(products);
+        this.menueGUI.refreshList();
     }
 
     /**
@@ -79,6 +140,8 @@ public class kitchen extends javax.swing.JFrame {
         editMenuBtn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         ordersTable = new javax.swing.JTable();
+        confirmOrderBtn = new javax.swing.JButton();
+        confirmOrderBtn1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -95,10 +158,34 @@ public class kitchen extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Table number", "Order", "Order time"
+                "Table number", "Order", "Order time", "Order ID", "Status"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(ordersTable);
+
+        confirmOrderBtn.setText("Confirm order");
+        confirmOrderBtn.setToolTipText("");
+        confirmOrderBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmOrderBtnActionPerformed(evt);
+            }
+        });
+
+        confirmOrderBtn1.setText("Reject order");
+        confirmOrderBtn1.setToolTipText("");
+        confirmOrderBtn1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmOrderBtn1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -108,9 +195,14 @@ public class kitchen extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 302, Short.MAX_VALUE)
+                        .addGap(0, 558, Short.MAX_VALUE)
                         .addComponent(editMenuBtn))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(confirmOrderBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(confirmOrderBtn1, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -119,17 +211,50 @@ public class kitchen extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(editMenuBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(confirmOrderBtn1)
+                    .addComponent(confirmOrderBtn))
+                .addContainerGap(109, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void editMenuBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuBtnActionPerformed
-        // TODO add your handling code here:
-        System.out.println("okkk");
+        this.menueGUI.setVisible(true);
     }//GEN-LAST:event_editMenuBtnActionPerformed
+
+    private void confirmOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOrderBtnActionPerformed
+
+        // check selected status of recevied then we can aprove it        
+        // if aproved or above print already approved
+        // format : orderStatusUpdate:X:Y
+        // X == status
+        // status : 1 means aproved and they are working on it
+        // status : 2 means that the order is on it's way
+        // Y == order number
+        // resp either confirmed or not.
+        // get selected id and sent to server
+        int[] selectedIndexes = ordersTable.getSelectedRows();
+        for (int i = 0; i < selectedIndexes.length; i++) {
+            //
+            if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Recevied")) {
+                // we can approve it
+                String orderID = (String) ordersTable.getValueAt(selectedIndexes[i], 3);
+                writer.println("orderStatusUpdate:1:" + orderID);
+                ordersTable.setValueAt("Confirmed", selectedIndexes[i], 4);
+                //
+            } else {
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " has already been approved", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_confirmOrderBtnActionPerformed
+
+    private void confirmOrderBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOrderBtn1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_confirmOrderBtn1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -167,6 +292,8 @@ public class kitchen extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton confirmOrderBtn;
+    private javax.swing.JButton confirmOrderBtn1;
     private javax.swing.JButton editMenuBtn;
     private javax.swing.JScrollPane jScrollPane1;
     public javax.swing.JTable ordersTable;
