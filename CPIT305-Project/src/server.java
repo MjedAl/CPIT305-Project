@@ -18,19 +18,21 @@ import java.util.logging.Logger;
  * @author Mjed
  */
 public class server {
-
+    // the kitchen socker
     public static connectionHandler theKitchen = null;
+    // the db
     public static db theDB;
-    // create hashmap that will store all the connections
+    // a hashmap that will store all the tables connections 
     public static HashMap<Integer, connectionHandler> tableConnections = new HashMap<Integer, connectionHandler>();
+    // an array list that will store all the connections, wether table or kitchen.
     public static ArrayList<connectionHandler> connections = new ArrayList<connectionHandler>();
-
+    // a hashmap that will keep track of all order ids with table ids. (so we can get the table id from the order id)
     public static HashMap<Integer, Integer> ordersWithTableID = new HashMap<Integer, Integer>();
-    public static int orderID = 0;
-
+    // incrmental number
+    public static int orderID = 1;
+    // an array list of products
     public static ArrayList<product> products;
 
-    //..
     public static void main(String[] args) throws IOException {
         try {
             //1-create server socket
@@ -58,7 +60,6 @@ public class server {
         }
     }
 
-    // The issue iss .... what if client is waiting for some answer on something and at the same time we push update products ??? pfff FUCK THIS
     // something changed in the db so first we update the list for our self before telling everyone to update their list
     public static void updateProductsForALl() {
         try {
@@ -69,30 +70,11 @@ public class server {
             Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
         }
         // tell all clients to update their products list
-        // tell client to excpect updated products list comnig
-        // send the products
-//        ArrayList<product> products;
-//        try {
-//            products = server.theDB.getProducts();
-//            ObjectOutputStream objectOutputStream;
         for (int i = 0; i < connections.size(); i++) {
             connections.get(i).wrt.println("updateProducts");
-//                try {
-//                    objectOutputStream = new ObjectOutputStream(connections.get(i).connection.getOutputStream());
-//                    //objectOutputStream.flush();
-//                    objectOutputStream.writeObject(products);
-//                    objectOutputStream.flush();
-//                } catch (IOException ex) {
-//                    Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
-//                }
         }
-//        } catch (dbNotSettedUpException ex) {
-//            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (SQLException ex) {
-//            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-    }
 
+    }
 }
 
 class connectionHandler extends Thread {
@@ -116,28 +98,30 @@ class connectionHandler extends Thread {
         }
     }
 
+    // TODO
     public boolean validateOrder(String order) {
         return true;
     }
+    // TODO
 
     public void reserveOrderQuantites(String order) {
 
     }
+    // TODO
 
     public void unreserverOrderQuantites(String order) {
 
     }
 
     public int sendOrderToKitchen(String order) {
-        // check if order is valid first..
-        // 
+        // TODO check if order is valid first..
         if (validateOrder(order)) {
-            // send order to the kitchen socket .....
-            // order is valid:
-            // add it to the server hash map of orders and table id
+            // send order to the kitchen socket
+            // add the order to the server hash map of orders and table id
             int currentOrderNum = server.orderID;
             server.ordersWithTableID.put(currentOrderNum, this.tableNumber);
             server.orderID++;
+            // send the order details to the kitchen print writer
             // table id # order # time # order ID
             PrintWriter wrt = server.theKitchen.wrt;
             wrt.println("newOrder#" + this.tableNumber + "#" + order.replace("order:", "") + "#" + "orderTime" + "#" + currentOrderNum);
@@ -145,6 +129,7 @@ class connectionHandler extends Thread {
         }
         return -1;
     }
+    // some order got updated so send it's information to the kitchen
 
     public boolean sendUpdatedOrderToKitchen(String line) {
         String order = line.split(":")[1];
@@ -156,9 +141,11 @@ class connectionHandler extends Thread {
         }
         return false;
     }
+    // client want's to delete some order. send the order to the kitchen
 
     public boolean RemoveOrderFromKitchen(String line) {
         String order = line.split(":")[1];
+        // TODO re add the reserved order quantites
         String orderNumber = line.split(":")[2];
         //unreserverOrderQuantites(order);
         PrintWriter wrt = server.theKitchen.wrt;
@@ -213,16 +200,7 @@ class connectionHandler extends Thread {
                 // store the connection in the server hash table
                 server.tableConnections.put(tableNumber, this);
                 System.out.println("Connection stored in the server hashmap");
-                // give the client the latest menu
-                // get it throught the db
-//                ArrayList<product> products = server.theDB.getProducts();
-                // send it via object stream
-                // we let the client know that the products has 
-                //wrt.println("updateProducts");
-//                System.out.println("Sending products to the new client");
-//                ObjectOutputStream objectOutputStream = new ObjectOutputStream(this.connection.getOutputStream());
-//                objectOutputStream.writeObject(products);
-//                System.out.println("Done sending");
+
                 while (true) {
                     // waiting for commands.
                     line = scan.nextLine();
@@ -234,15 +212,12 @@ class connectionHandler extends Thread {
                         break;
                     } else if (line.startsWith("products")) {
                         // client want to get the list of products
-                        // get it throught the db
                         // send it via object stream
                         ObjectOutputStream objectOutputStream = new ObjectOutputStream(this.connection.getOutputStream());
                         objectOutputStream.flush();
                         objectOutputStream.writeObject(server.products);
-//                       objectOutputStream.close();
-
                     } else {
-                        // other command
+                        // other commands
                         if (!isKitchen) {
                             if (line.startsWith("order:")) {
                                 int orderID = sendOrderToKitchen(line);
@@ -300,12 +275,8 @@ class connectionHandler extends Thread {
                                 // tell everyone to update their list
                                 server.updateProductsForALl();
                             } else {
-                                // else kitchen might want to update something on the menu
-                                // after we do the update
-                                // we give the updated menu to everyone
-                                //server.updateProductsForALl();
+                                // TODO add more cases?
                             }
-                            //wrt.println("recived"); // ??? WTF IS THIS
                         }
                     }
                 }
