@@ -17,6 +17,7 @@ import java.util.logging.Logger;
  *
  * @author Mjed
  */
+
 public class server {
     // the kitchen socker
     public static connectionHandler theKitchen = null;
@@ -209,6 +210,7 @@ class connectionHandler extends Thread {
                             + "- commands is :" + line);
 
                     if (line.equalsIgnoreCase("exit")) {
+                        // TODO
                         break;
                     } else if (line.startsWith("products")) {
                         // client want to get the list of products
@@ -219,6 +221,7 @@ class connectionHandler extends Thread {
                     } else {
                         // other commands
                         if (!isKitchen) {
+                            // Table
                             if (line.startsWith("order:")) {
                                 int orderID = sendOrderToKitchen(line);
                                 if (orderID != -1) {
@@ -283,7 +286,6 @@ class connectionHandler extends Thread {
             } else {
                 this.connection.close();
             }
-
         } catch (IOException ex) {
             Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {

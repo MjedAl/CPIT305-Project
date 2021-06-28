@@ -141,7 +141,7 @@ public class kitchen extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         ordersTable = new javax.swing.JTable();
         confirmOrderBtn = new javax.swing.JButton();
-        confirmOrderBtn1 = new javax.swing.JButton();
+        orderReadyBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -179,11 +179,11 @@ public class kitchen extends javax.swing.JFrame {
             }
         });
 
-        confirmOrderBtn1.setText("Reject order");
-        confirmOrderBtn1.setToolTipText("");
-        confirmOrderBtn1.addActionListener(new java.awt.event.ActionListener() {
+        orderReadyBtn.setText("Order ready");
+        orderReadyBtn.setToolTipText("");
+        orderReadyBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confirmOrderBtn1ActionPerformed(evt);
+                orderReadyBtnActionPerformed(evt);
             }
         });
 
@@ -201,7 +201,7 @@ public class kitchen extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(confirmOrderBtn)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(confirmOrderBtn1, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(orderReadyBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -214,7 +214,7 @@ public class kitchen extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(confirmOrderBtn1)
+                    .addComponent(orderReadyBtn)
                     .addComponent(confirmOrderBtn))
                 .addContainerGap(109, Short.MAX_VALUE))
         );
@@ -252,9 +252,9 @@ public class kitchen extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_confirmOrderBtnActionPerformed
 
-    private void confirmOrderBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmOrderBtn1ActionPerformed
+    private void orderReadyBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orderReadyBtnActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_confirmOrderBtn1ActionPerformed
+    }//GEN-LAST:event_orderReadyBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -293,9 +293,9 @@ public class kitchen extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton confirmOrderBtn;
-    private javax.swing.JButton confirmOrderBtn1;
     private javax.swing.JButton editMenuBtn;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton orderReadyBtn;
     public javax.swing.JTable ordersTable;
     // End of variables declaration//GEN-END:variables
 }
