@@ -42,6 +42,9 @@ public class trackOrderPage extends javax.swing.JFrame {
             statusProgressbar.setValue(1);
             // order got aproved so stop the editable from being editied
             orderTable.setDefaultEditor(Object.class, null);
+        }else if (status ==2){
+            orderStatus.setText("Order is coming for you :)");
+            statusProgressbar.setValue(2);
         }
 
     }

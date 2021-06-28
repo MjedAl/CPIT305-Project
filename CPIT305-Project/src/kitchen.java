@@ -233,7 +233,7 @@ public class kitchen extends javax.swing.JFrame {
         // format : orderStatusUpdate:X:Y
         // X == status
         // status : 1 means aproved and they are working on it
-        // status : 2 means that the order is on it's way
+        // status : 2 means that the order is ready
         // Y == order number
         // resp either confirmed or not.
         // get selected id and sent to server
@@ -253,7 +253,22 @@ public class kitchen extends javax.swing.JFrame {
     }//GEN-LAST:event_confirmOrderBtnActionPerformed
 
     private void orderReadyBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orderReadyBtnActionPerformed
-        // TODO add your handling code here:
+         int[] selectedIndexes = ordersTable.getSelectedRows();
+        for (int i = 0; i < selectedIndexes.length; i++) {
+            //
+            if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Confirmed")) {
+                // we can approve it
+                String orderID = (String) ordersTable.getValueAt(selectedIndexes[i], 3);
+                writer.println("orderStatusUpdate:2:" + orderID);
+                ordersTable.setValueAt("Ready", selectedIndexes[i], 4);
+                //
+            }else if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Recevied")) {
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " need to be confirmed first", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " is ready from a while", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_orderReadyBtnActionPerformed
 
     /**
