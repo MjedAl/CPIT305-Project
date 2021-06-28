@@ -25,8 +25,6 @@ public class db {
     private db() {
         System.out.println("first time connecting. first time settings...");
         setupDB();
-        // Uncomment bellow if u want some random data.
-        //addSomeRandomProducts();
         System.out.println("connection is ready...");
     }
 
@@ -58,20 +56,7 @@ public class db {
         pstat.execute();
     }
 
-    private void addSomeRandomProducts() {
-        try {
-            addProduct("Ms7b", 10, 30);
-            addProduct("burger", 5, 44);
-            addProduct("random", 564, 33);
-            addProduct("uhuih", 3, 10);
-            addProduct("oyufyfu", 123, 20);
-        } catch (SQLException ex) {
-            Logger.getLogger(db.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     public void updateProduct(int id, String name, double price, int quantity) throws SQLException {
-        System.out.println("here");
         PreparedStatement pstat = con.prepareStatement("update products set name=?, price=?, quantity=? where id=?");
         pstat.setString(1, name);
         pstat.setDouble(2, price);
