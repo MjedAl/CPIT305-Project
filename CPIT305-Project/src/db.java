@@ -21,9 +21,8 @@ public class db {
     private String dbConnectionString = "";
     private Connection con;
     private Statement stat;
-    
+
     private db() {
-        System.out.println("first time connecting. first time settings...");
         setupDB();
         System.out.println("connection is ready...");
     }
@@ -79,8 +78,11 @@ public class db {
                 this.setup = true;
                 //1-load mySql Driver
                 Class.forName("com.mysql.cj.jdbc.Driver");
-                //2-create connection
-                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
+                // local db
+                //con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
+                // online db
+                con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
+
                 //3-create statement
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 //4- use statement to execute any sql commands

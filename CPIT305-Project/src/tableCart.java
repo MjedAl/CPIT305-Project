@@ -157,7 +157,6 @@ public class tableCart extends javax.swing.JFrame {
 
 
     private void sendOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendOrderBtnActionPerformed
-        // TODO add your handling code here:
         if (productsInCart.size() == 0) {
             JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
@@ -180,7 +179,7 @@ public class tableCart extends javax.swing.JFrame {
             theTable.ServerReponse="";
 
             int orderNumber = -1;
-
+            System.out.println(response);
             if (response.startsWith("accepted")) {
                 JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
                 orderNumber = Integer.parseInt(response.split(":")[1]);

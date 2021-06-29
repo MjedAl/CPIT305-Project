@@ -60,6 +60,8 @@ public class server {
             Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    // TODO add a method that will create a folder logs, and the date of today.
+    // then create two txt file inside them. one for normal logs and other for errors
 
     // something changed in the db so first we update the list for our self before telling everyone to update their list
     public static void updateProductsForALl() {
