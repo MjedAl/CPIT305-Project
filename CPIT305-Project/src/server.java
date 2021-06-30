@@ -17,8 +17,8 @@ import java.util.logging.Logger;
  *
  * @author Mjed
  */
-
 public class server {
+
     // the kitchen socker
     public static connectionHandler theKitchen = null;
     // the db
@@ -188,6 +188,10 @@ class connectionHandler extends Thread {
                 // I'm table and there's kitchen
                 try {
                     this.tableNumber = Integer.parseInt(line.split(":")[1]);
+                    // check if table already registred with same id
+                    if (server.tableConnections.get(tableNumber) != null) {
+                    wrt.println("rejected:1:Table with the same number already exists!");
+                    }
                     wrt.println("accepted");
                 } catch (NumberFormatException e) {
                     wrt.println("rejected:1:Invalid table number");

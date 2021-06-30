@@ -7,7 +7,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-
 /**
  *
  * @author Mjed
@@ -41,7 +40,7 @@ public class tableCart extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.productsInCart.size(); i++) {
-            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), 1});
+            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), this.productsInCart.get(i).getQuantity()});
         }
         this.setVisible(true);
     }
@@ -161,22 +160,25 @@ public class tableCart extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
 
+            // first update the products in cart from the table, maybe user changed the quantity.
             String productsStr = "order:";
-            for (int i = 0; i < productsInCart.size(); i++) {
-                productsStr += productsInCart.get(i).getQuantity() + "*" + productsInCart.get(i).getName() + " + ";
+
+            for (int i = 0; i < productsTable.getRowCount(); i++) {
+                productsStr += productsTable.getValueAt(i, 3) + "*" + productsTable.getValueAt(i, 1) + " + ";
             }
+            System.out.println(productsStr);
+
             // remove the last " + "
             productsStr = productsStr.substring(0, productsStr.length() - 3);
 
             writer.println(productsStr);
 
-//            String response = scanner.nextLine();
             String response = "";
             while (theTable.ServerReponse.equalsIgnoreCase("")) {
                 // keep waiting until we get response from the other thread
                 response = theTable.ServerReponse;
             }
-            theTable.ServerReponse="";
+            theTable.ServerReponse = "";
 
             int orderNumber = -1;
             System.out.println(response);
@@ -216,12 +218,12 @@ public class tableCart extends javax.swing.JFrame {
 
             //
             productsInCart.remove(productsIndxes[i]);
-            
+
             // remove from the view
             model.removeRow(productsIndxes[i]);
 
         }
-        
+
         this.theTable.updateCartBtn("Cart (" + productsInCart.size() + ")");
     }//GEN-LAST:event_removeBtnActionPerformed
 

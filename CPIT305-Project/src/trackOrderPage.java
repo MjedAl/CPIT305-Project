@@ -58,14 +58,13 @@ public class trackOrderPage extends javax.swing.JFrame {
         this.orderNumber = orderNumber;
         initComponents();
         this.setVisible(true);
-        // load products to the the
+        // load products to the table
         DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.productsInCart.size(); i++) {
-            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), 1});
+            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), this.productsInCart.get(i).getQuantity()});
         }
-        // add lisiter for table changes?
-
+        orderIdText.setText("Order id: "+orderNumber);
     }
 
     /**

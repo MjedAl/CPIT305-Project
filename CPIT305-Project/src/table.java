@@ -145,9 +145,9 @@ public class table extends javax.swing.JFrame {
                 // product that just got update is not available, so check if it was in the cart remove it.
                 for (int j = 0; j < productsInCart.size(); j++) {
                     if (productsInCart.get(j).getId() == this.products.get(i).getId()) {
+                        JOptionPane.showMessageDialog(null, "Sorry we removed the prouct " + productsInCart.get(j).getName() + " from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
                         productsInCart.remove(j);
                         cartBtn.setText("Cart (" + productsInCart.size() + ")");
-                        JOptionPane.showMessageDialog(null, "Sorry we removed the prouct " + productsInCart.get(j).getName() + " from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -185,9 +185,23 @@ public class table extends javax.swing.JFrame {
     private void addToCart() {
         int[] productsIndxes = productsTable.getSelectedRows();
         for (int i = 0; i < productsIndxes.length; i++) {
-            productsInCart.add(new product((Integer) productsTable.getValueAt(productsIndxes[i], 0),
-                    (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 2), 1));
+            
+            // first check if product already exists in the cart
+            boolean exitsInCart =false;
+            for (int j = 0; j < productsInCart.size(); j++) {
+                // same ID
+                if (productsInCart.get(j).getId() == (Integer) productsTable.getValueAt(productsIndxes[i], 0)) {
+                    productsInCart.get(j).setQuantity(productsInCart.get(j).getQuantity()+1);
+                    exitsInCart = true;
+                    break;
+                }
+            }
+            if (!exitsInCart){
+                productsInCart.add(new product((Integer) productsTable.getValueAt(productsIndxes[i], 0),
+                        (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 2), 1)); 
+            }
         }
+        
         cartBtn.setText("Cart (" + productsInCart.size() + ")");
     }
 
