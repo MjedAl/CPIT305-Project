@@ -93,7 +93,7 @@ public class login extends javax.swing.JFrame {
                 wrt.println("Kitchen");
             } else {
                 // ask for the table number
-                tableNum = JOptionPane.showInputDialog(null, "Please Enter the table number (one odd number only): ");
+                tableNum = JOptionPane.showInputDialog(null, "Please Enter the table number: ");
                 wrt.println("table:" + tableNum);
             }
             // get respond

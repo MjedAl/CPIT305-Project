@@ -86,7 +86,7 @@ public class trackOrderPage extends javax.swing.JFrame {
         statusProgressbar = new javax.swing.JProgressBar();
         orderStatus = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         orderIdText.setText("Order ID: ");
 

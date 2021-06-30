@@ -103,6 +103,7 @@ public class table extends javax.swing.JFrame {
 
     public void addNewTrackPage(trackOrderPage page) {
         this.orderPages.add(page);
+        currentOrdersBtn.setText("Current Orders (" + orderPages.size() + ")");
     }
 
     public void removeTrackPage(int orderNumber) {
@@ -316,7 +317,7 @@ public class table extends javax.swing.JFrame {
 
     private void cartBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cartBtnActionPerformed
         if (productsInCart.size() == 0) {
-            JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Please add some products first", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
             this.cart.callAgain(productsInCart);
             this.setVisible(false);
@@ -324,7 +325,10 @@ public class table extends javax.swing.JFrame {
     }//GEN-LAST:event_cartBtnActionPerformed
 
     private void currentOrdersBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_currentOrdersBtnActionPerformed
-        // TODO add your handling code here:
+
+        for (int i = 0; i < orderPages.size(); i++) {
+            orderPages.get(i).setVisible(true);
+        }
     }//GEN-LAST:event_currentOrdersBtnActionPerformed
 
     /**

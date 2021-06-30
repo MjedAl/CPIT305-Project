@@ -72,7 +72,7 @@ public class menu extends javax.swing.JFrame {
         productQuantity = new javax.swing.JTextField();
         addProductBtn = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         deleteSelected.setText("Delete selected");
         deleteSelected.setToolTipText("");
