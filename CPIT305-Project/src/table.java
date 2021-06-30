@@ -145,18 +145,37 @@ public class table extends javax.swing.JFrame {
     public void refreshListView() {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
+
         for (int i = 0; i < this.products.size(); i++) {
             // only add products that are available to the table
             if (this.products.get(i).getQuantity() > 0) {
                 model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice()});
             }
-            // check for the prodcut that just got updated if the user has it in the cart. update it's information
-            for (int j = 0; j < productsInCart.size(); j++) {
-                if (productsInCart.get(j).getId() == products.get(i).getId()) {
-                    productsInCart.get(j).setQuantity(products.get(i).getQuantity());
+        }
+        // compare the products that just got updated with the products in cart.
+        // to update the products infomration that's in the cart and to see if a product was removed
+        for (int i = 0; i < productsInCart.size(); i++) {
+
+            boolean found = false;
+            for (int j = 0; j < products.size(); j++) {
+                if (productsInCart.get(i).getId() == products.get(j).getId()) {
+                    // remove the existing product in the cart and add a new one with the updated information.
+                    products.get(j).setRequiredQuantity(productsInCart.get(i).getRequiredQuantity());
+                    productsInCart.add(products.get(j));
+                    productsInCart.remove(i);
+                    found = true;
+                    break;
                 }
+                // reached the end and a product in the cart is not found in the updated list == the product got removed
+            }
+            if (!found) {
+                JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(i).getName() + " was removed from the menu. we will delete it from the cart.", "Whoops", JOptionPane.ERROR_MESSAGE);
+                productsInCart.remove(i);
+                cartBtn.setText("Cart (" + productsInCart.size() + ")");
             }
         }
+        this.cart.setProductsInCart(productsInCart);
+        this.cart.redrawTable();
     }
 
     private void addToCart() {
@@ -322,7 +341,9 @@ public class table extends javax.swing.JFrame {
         if (productsInCart.size() == 0) {
             JOptionPane.showMessageDialog(null, "Please add some products first", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            this.cart.callAgain(productsInCart);
+            this.cart.setProductsInCart(productsInCart);
+            this.cart.redrawTable();
+            this.cart.setVisible(true);
             this.setVisible(false);
         }
     }//GEN-LAST:event_cartBtnActionPerformed

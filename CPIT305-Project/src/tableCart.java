@@ -27,15 +27,16 @@ public class tableCart extends javax.swing.JFrame {
         initComponents();
     }
 
-    public void callAgain(ArrayList<product> productsInCart) {
+    public void setProductsInCart(ArrayList<product> productsInCart) {
         this.productsInCart = productsInCart;
+    }
 
+    public void redrawTable() {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.productsInCart.size(); i++) {
             model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), this.productsInCart.get(i).getRequiredQuantity()});
         }
-        this.setVisible(true);
     }
 
     /**
