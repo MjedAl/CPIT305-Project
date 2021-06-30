@@ -182,7 +182,11 @@ public class tableCart extends javax.swing.JFrame {
 
             int orderNumber = -1;
             System.out.println(response);
-            if (response.startsWith("accepted")) {
+            if (response.startsWith("rejected")) {
+                JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
+                // show rejection reaseon
+                // redirect to home page
+            } else {
                 JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
                 orderNumber = Integer.parseInt(response.split(":")[1]);
                 // open tracking page for the order
@@ -194,11 +198,6 @@ public class tableCart extends javax.swing.JFrame {
                 theTable.resetCart();
                 dispose();
                 // reset the cart
-
-            } else {
-                JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
-                // show rejection reaseon
-                // redirect to home page
             }
 
         }
