@@ -13,13 +13,6 @@ import javax.swing.table.DefaultTableModel;
  */
 public class tableCart extends javax.swing.JFrame {
 
-    /**
-     * Creates new form tableCart
-     */
-    public tableCart() {
-        initComponents();
-    }
-
     private ArrayList<product> productsInCart;
     private table theTable;
     private Socket connection;
@@ -40,7 +33,7 @@ public class tableCart extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.productsInCart.size(); i++) {
-            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), this.productsInCart.get(i).getQuantity()});
+            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), this.productsInCart.get(i).getRequiredQuantity()});
         }
         this.setVisible(true);
     }
@@ -154,7 +147,6 @@ public class tableCart extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-
     private void sendOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendOrderBtnActionPerformed
         if (productsInCart.size() == 0) {
             JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
@@ -164,6 +156,18 @@ public class tableCart extends javax.swing.JFrame {
             String productsStr = "order:";
 
             for (int i = 0; i < productsTable.getRowCount(); i++) {
+                // search for the object of the prodcut
+                for (int j = 0; j < this.productsInCart.size(); j++) {
+                    // found the obj
+                    if (this.productsInCart.get(j).getId() == (Integer) productsTable.getValueAt(i, 0)) {
+                        // user wants quantity that's bigger than the available
+                        if ((Integer) productsTable.getValueAt(i, 3) > this.productsInCart.get(j).getQuantity()) {
+                            // print msg
+                            JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(j).getName() + " only has " + productsInCart.get(j).getQuantity() + " in stock", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+                }
                 productsStr += productsTable.getValueAt(i, 3) + "*" + productsTable.getValueAt(i, 1) + " + ";
             }
             System.out.println("Sending order: " + productsStr);
@@ -192,7 +196,6 @@ public class tableCart extends javax.swing.JFrame {
                 // reset the cart
                 theTable.resetCart();
                 dispose();
-
             } else {
                 JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
                 // show rejection reaseon
@@ -230,40 +233,6 @@ public class tableCart extends javax.swing.JFrame {
         theTable.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(tableCart.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(tableCart.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(tableCart.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(tableCart.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new tableCart().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

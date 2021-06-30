@@ -82,10 +82,6 @@ public class table extends javax.swing.JFrame {
     /**
      * Creates new form table
      */
-    public table() {
-        initComponents();
-    }
-
     ArrayList<product> products;
     private Socket connection;
     private Scanner scanner;
@@ -124,8 +120,19 @@ public class table extends javax.swing.JFrame {
         tableNumLabel.setText("Table number : " + tableID);
         // make obj for the cart
         cart = new tableCart(this, connection, scanner, writer);
-        // make a thread that will wait for updates.
-        refreshList();
+
+        // requsting the updated list from the db
+        writer.println("products");
+        try {
+            ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
+            products = (ArrayList<product>) objectInputStream.readObject();
+            refreshListView();
+        } catch (IOException ex) {
+            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         new listenForServerUpdates(connection, scanner, writer, this).start();
         this.setVisible(true);
     }
@@ -134,74 +141,56 @@ public class table extends javax.swing.JFrame {
         this.products = products;
     }
 
+    // update the table view from the products arraylist.
     public void refreshListView() {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.products.size(); i++) {
-            // only add products that are available
+            // only add products that are available to the table
             if (this.products.get(i).getQuantity() > 0) {
                 model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice()});
-            } else {
-                // product that just got update is not available, so check if it was in the cart remove it.
-                for (int j = 0; j < productsInCart.size(); j++) {
-                    if (productsInCart.get(j).getId() == this.products.get(i).getId()) {
-                        JOptionPane.showMessageDialog(null, "Sorry we removed the prouct " + productsInCart.get(j).getName() + " from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
-                        productsInCart.remove(j);
-                        cartBtn.setText("Cart (" + productsInCart.size() + ")");
-                    }
+            }
+            // check for the prodcut that just got updated if the user has it in the cart. update it's information
+            for (int j = 0; j < productsInCart.size(); j++) {
+                if (productsInCart.get(j).getId() == products.get(i).getId()) {
+                    productsInCart.get(j).setQuantity(products.get(i).getQuantity());
                 }
             }
-        }
-    }
-
-    public void refreshList() {
-        // requsting the updated list from the db
-        writer.println("products");
-        try {
-            ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
-            this.products = (ArrayList<product>) objectInputStream.readObject();
-
-            DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
-            for (int i = 0; i < this.products.size(); i++) {
-                // only add products that are available
-                if (this.products.get(i).getQuantity() > 0) {
-                    model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice()});
-                } else {
-                    // product that just got update is not available, so check if it was in the cart remove it.
-                    for (int j = 0; j < productsInCart.size(); j++) {
-                        if (productsInCart.get(j).getId() == this.products.get(i).getId()) {
-                            JOptionPane.showMessageDialog(null, "Sorry we removed the prouct " + productsInCart.get(j).getName() + " from your cart. it's not available anymore.", "Sorry", JOptionPane.ERROR_MESSAGE);
-                        }
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     private void addToCart() {
         int[] productsIndxes = productsTable.getSelectedRows();
         for (int i = 0; i < productsIndxes.length; i++) {
-            
+
             // first check if product already exists in the cart
-            boolean exitsInCart =false;
+            boolean exitsInCart = false;
             for (int j = 0; j < productsInCart.size(); j++) {
                 // same ID
                 if (productsInCart.get(j).getId() == (Integer) productsTable.getValueAt(productsIndxes[i], 0)) {
-                    productsInCart.get(j).setQuantity(productsInCart.get(j).getQuantity()+1);
+                    int wantedQ = productsInCart.get(j).getRequiredQuantity() + 1;
+                    int availableQ = productsInCart.get(j).getQuantity();
+                    if (wantedQ > availableQ) {
+                        JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(j).getName() + " only has " + productsInCart.get(j).getQuantity() + " in stock", "Rejected", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        productsInCart.get(j).setRequiredQuantity(wantedQ);
+                    }
                     exitsInCart = true;
                     break;
                 }
             }
-            if (!exitsInCart){
-                productsInCart.add(new product((Integer) productsTable.getValueAt(productsIndxes[i], 0),
-                        (String) productsTable.getValueAt(productsIndxes[i], 1), (Double) productsTable.getValueAt(productsIndxes[i], 2), 1)); 
+            if (!exitsInCart) {
+                // get the id of the product from the table and add it to the cart
+                int productID = (Integer) productsTable.getValueAt(productsIndxes[i], 0);
+                // search for the object of the prodcut
+                for (int j = 0; j < this.products.size(); j++) {
+                    if (this.products.get(j).getId() == productID) {
+                        productsInCart.add(this.products.get(j));
+                        break;
+                    }
+                }
             }
         }
-        
         cartBtn.setText("Cart (" + productsInCart.size() + ")");
     }
 
@@ -344,41 +333,6 @@ public class table extends javax.swing.JFrame {
             orderPages.get(i).setVisible(true);
         }
     }//GEN-LAST:event_currentOrdersBtnActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(table.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(table.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(table.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(table.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new table().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
