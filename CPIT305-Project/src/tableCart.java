@@ -202,7 +202,7 @@ public class tableCart extends javax.swing.JFrame {
                 // keep waiting until we get response from the other thread
             }
             response = theTable.ServerReponse;
-            
+           
             int orderNumber = -1;
             if (response.startsWith("accepted")) {
                 JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);

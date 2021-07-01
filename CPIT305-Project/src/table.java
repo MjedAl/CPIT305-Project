@@ -175,11 +175,11 @@ public class table extends javax.swing.JFrame {
         // update the list for the cart
         this.cart.setProductsInCart(productsInCart);
         this.cart.redrawTable();
-        // update the list for all the tracking page (user is not tracking page and he did not confirm so he can change the quantites)
-        // TODO
-        //        for (int i = 0; i < this.orderPages.size(); i++) {
-        //            this.orderPages.get(i).updateProductsQuantites(products);
-        //        }
+//         update the list for all the tracking page (user is not tracking page and he did not confirm so he can change the quantites)
+//         TODO
+        for (int i = 0; i < this.orderPages.size(); i++) {
+            this.orderPages.get(i).updateProductsQuantites(products);
+        }
     }
 
     private void addToCart() {

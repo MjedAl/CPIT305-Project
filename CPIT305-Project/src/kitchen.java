@@ -41,13 +41,13 @@ class listenForOrders extends Thread {
             String[] orderDetails = line.split("\\#");
             DefaultTableModel model = (DefaultTableModel) kitchenGUI.ordersTable.getModel();
             if (orderDetails[0].equalsIgnoreCase("newOrder")) {
-                model.addRow(new Object[]{orderDetails[1], orderDetails[2].replaceAll("\\+", "\n"), orderDetails[3], orderDetails[4], "Recevied"});
+                model.addRow(new Object[]{orderDetails[1], orderDetails[2].replaceAll("\\+", "\n "), orderDetails[3], orderDetails[4], "Recevied"});
             } else if (orderDetails[0].equalsIgnoreCase("updateOrder")) {
                 // we look for the row of the order that we want to update
                 for (int i = 0; i < kitchenGUI.ordersTable.getRowCount(); i++) {
                     if (((String) kitchenGUI.ordersTable.getValueAt(i, 3)).equalsIgnoreCase(orderDetails[4])) {
                         // update the order
-                        kitchenGUI.ordersTable.setValueAt(orderDetails[2].replaceAll("\\+", "\n"), i, 1);
+                        kitchenGUI.ordersTable.setValueAt(orderDetails[2].replaceAll("\\+", "\n "), i, 1);
                         break;
                     }
                 }

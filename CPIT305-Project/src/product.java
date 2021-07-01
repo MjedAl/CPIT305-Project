@@ -20,8 +20,6 @@ public class product implements Serializable {
     Lock W = L.writeLock();
 
     public boolean CheckIfQuantitesIsAvailable(int wantedQuantity) {
-        System.out.println(this.name + "\tc" + wantedQuantity);
-
         try {
             R.lock();
             if (wantedQuantity > quantity) {
@@ -33,30 +31,26 @@ public class product implements Serializable {
         }
     }
 
-    public void reserveQuantites(int wantedQuantity) {
-        System.out.println(this.name + "\tR" + wantedQuantity);
+    public boolean reserveQuantites(int wantedQuantity) {
         try {
             W.lock();
             if (wantedQuantity > quantity) {
-                return;
+                return false;
             }
-            System.out.println(quantity);
             this.quantity -= wantedQuantity;
-            System.out.println(quantity);
-            
         } finally {
             W.unlock();
+            return true;
         }
     }
 
-    public void unreserveQuantites(int wantedQuantity) {
-        System.out.println(this.name + "\tU" + wantedQuantity);
-
+    public boolean unreserveQuantites(int wantedQuantity) {
         try {
             W.lock();
             this.quantity += wantedQuantity;
         } finally {
             W.unlock();
+            return true;
         }
     }
 

@@ -242,16 +242,27 @@ public class trackOrderPage extends javax.swing.JFrame {
                 for (int j = 0; j < this.productsInCart.size(); j++) {
                     // found the obj
                     if (this.productsInCart.get(j).getId() == (Integer) orderTable.getValueAt(i, 0)) {
+
+                        if ((Integer) orderTable.getValueAt(i, 3) < 0) {
+                            JOptionPane.showMessageDialog(null, "Quantity can't be less than 0", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if ((Integer) orderTable.getValueAt(i, 3) == 0) {
+                            JOptionPane.showMessageDialog(null, "Please remove the product instead of putting 0", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
                         // user wants quantity that's bigger than the available
                         // if new quantiy - old quantity > the avaialble quantity
                         // why? because the old quanttiy is already reservered for this order so we don't need to see if it's available again :)
                         if (((Integer) orderTable.getValueAt(i, 3) - this.productsInCart.get(j).getRequiredQuantity()) > this.productsInCart.get(j).getQuantity()) {
                             // print msg
                             JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(j).getName() + " only has " + productsInCart.get(j).getQuantity() + " more in stock", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            orderTable.setValueAt(this.productsInCart.get(j).getRequiredQuantity(), i, 3);
                             return;
                         } else {
-                            // old quantity : new quantity * product name
-                            productsStr += productsInCart.get(j).getRequiredQuantity() + "-" + orderTable.getValueAt(i, 3) + "*" + orderTable.getValueAt(i, 1) + "+";
+                            // old quantity * new quantity * product name
+                            productsStr += productsInCart.get(j).getRequiredQuantity() + "*" + orderTable.getValueAt(i, 3) + "*" + orderTable.getValueAt(i, 1) + "+";
+                            this.productsInCart.get(j).setRequiredQuantity((Integer) orderTable.getValueAt(i, 3));
                         }
                     }
                 }
@@ -261,17 +272,35 @@ public class trackOrderPage extends javax.swing.JFrame {
             //productsStr = productsStr.substring(0, productsStr.length() - 3);
 
             writer.println(productsStr + ":" + this.orderNumber);
-            JOptionPane.showMessageDialog(null, "Your order was updated :(", "Okay", JOptionPane.DEFAULT_OPTION);
+            JOptionPane.showMessageDialog(null, "Your order update was sent", "Okay", JOptionPane.DEFAULT_OPTION);
         }
     }//GEN-LAST:event_saveChangeBtnActionPerformed
 
     private void removeProductBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeProductBtnActionPerformed
-        int[] productsIndxes = orderTable.getSelectedRows();
-        DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
-        for (int i = 0; i < productsIndxes.length; i++) {
-            productsInCart.remove(productsIndxes[i]);
-            model.removeRow(productsIndxes[i]);
-        }
+            JOptionPane.showMessageDialog(null, "TODO", "Info", JOptionPane.DEFAULT_OPTION);
+            // FIX IT LATER
+//        int[] productsIndxes = orderTable.getSelectedRows();
+//        if (productsInCart.size() == 1) {
+//            JOptionPane.showMessageDialog(null, "You only have one product. your order will be canceled", "Info", JOptionPane.DEFAULT_OPTION);
+//            String productsStr = "";
+//            for (int i = 0; i < productsInCart.size(); i++) {
+//                productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
+//            }
+//            writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
+//            JOptionPane.showMessageDialog(null, "Your order was deleted :(", "Okay", JOptionPane.ERROR_MESSAGE);
+//            this.theTable.removeTrackPage(orderNumber);
+//            dispose();
+//        } else {
+//            // user has multiple orders, only delete the selected
+//            DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
+//            for (int i = 0; i < productsIndxes.length; i++) {
+//                productsInCart.remove(productsIndxes[i]);
+//                model.removeRow(productsIndxes[i]);
+//            }
+//        }
+
+        // send the update order to the kitchen
+
     }//GEN-LAST:event_removeProductBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -288,16 +317,16 @@ public class trackOrderPage extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     // TODO, maybe remove this?
-//    void updateProductsQuantites(ArrayList<product> products) {
-//        // loop through all products in cart
-//        for (int i = 0; i < this.productsInCart.size(); i++) {
-//            // search for the object in the full list
-//            for (int j = 0; j < products.size(); j++) {
-//                if (productsInCart.get(i).getId() == products.get(j).getId()) {
-//                    productsInCart.get(i).setQuantity(products.get(j).getQuantity());
-//                    break;
-//                }
-//            }
-//        }
-//    }
+    void updateProductsQuantites(ArrayList<product> products) {
+        // loop through all products in cart
+        for (int i = 0; i < this.productsInCart.size(); i++) {
+            // search for the object in the full list
+            for (int j = 0; j < products.size(); j++) {
+                if (productsInCart.get(i).getId() == products.get(j).getId()) {
+                    productsInCart.get(i).setQuantity(products.get(j).getQuantity());
+                    break;
+                }
+            }
+        }
+    }
 }
