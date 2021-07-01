@@ -145,7 +145,6 @@ public class table extends javax.swing.JFrame {
     public void refreshListView() {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
-
         for (int i = 0; i < this.products.size(); i++) {
             // only add products that are available to the table
             if (this.products.get(i).getQuantity() > 0) {
@@ -155,7 +154,6 @@ public class table extends javax.swing.JFrame {
         // compare the products that just got updated with the products in cart.
         // to update the products infomration that's in the cart and to see if a product was removed
         for (int i = 0; i < productsInCart.size(); i++) {
-
             boolean found = false;
             for (int j = 0; j < products.size(); j++) {
                 if (productsInCart.get(i).getId() == products.get(j).getId()) {
@@ -166,16 +164,22 @@ public class table extends javax.swing.JFrame {
                     found = true;
                     break;
                 }
-                // reached the end and a product in the cart is not found in the updated list == the product got removed
             }
+            // reached the end and a product in the cart is not found in the updated list == the product got removed
             if (!found) {
                 JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(i).getName() + " was removed from the menu. we will delete it from the cart.", "Whoops", JOptionPane.ERROR_MESSAGE);
                 productsInCart.remove(i);
                 cartBtn.setText("Cart (" + productsInCart.size() + ")");
             }
         }
+        // update the list for the cart
         this.cart.setProductsInCart(productsInCart);
         this.cart.redrawTable();
+        // update the list for all the tracking page (user is not tracking page and he did not confirm so he can change the quantites)
+        // TODO
+        //        for (int i = 0; i < this.orderPages.size(); i++) {
+        //            this.orderPages.get(i).updateProductsQuantites(products);
+        //        }
     }
 
     private void addToCart() {

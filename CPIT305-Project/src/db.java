@@ -64,6 +64,13 @@ public class db {
         pstat.execute();
     }
 
+    public void updateProductQuantity(int id, int quantity) throws SQLException {
+        PreparedStatement pstat = con.prepareStatement("update products set quantity=? where id=?");
+        pstat.setInt(1, quantity);
+        pstat.setInt(2, id);
+        pstat.execute();
+    }
+
     public void removeProduct(int id) throws SQLException {
         PreparedStatement pstat = con.prepareStatement("delete from products where id=?");
         pstat.setInt(1, id);
@@ -79,9 +86,9 @@ public class db {
                 //1-load mySql Driver
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 // local db
-                //con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
+                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
                 // online db
-                con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
+                //con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
 
                 //3-create statement
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
