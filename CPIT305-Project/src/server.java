@@ -317,6 +317,7 @@ class connectionHandler extends Thread {
                     // check if table already registred with same id
                     if (server.tableConnections.get(tableNumber) != null) {
                         wrt.println("rejected:1:Table with the same number already exists!");
+                        rejected=true;
                     }
                     wrt.println("accepted");
                 } catch (NumberFormatException e) {
