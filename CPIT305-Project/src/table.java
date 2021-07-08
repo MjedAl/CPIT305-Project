@@ -1,5 +1,7 @@
 
 import java.awt.PopupMenu;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
@@ -13,6 +15,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -42,6 +45,9 @@ class listenForServerUpdates extends Thread {
 
             // recevied new order.
             // newOrder # table id # order # time
+            if(!scanner.hasNextLine()){
+                break;
+            }
             line = scanner.nextLine();
             String[] parts = line.split(":");
             System.out.println("We recevied the following command : " + line);
@@ -120,6 +126,19 @@ public class table extends javax.swing.JFrame {
         tableNumLabel.setText("Table number : " + tableID);
         // make obj for the cart
         cart = new tableCart(this, connection, scanner, writer);
+        
+        // handling window closing event
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent ev) {
+                // on close write exit so it will be handled by the server
+                writer.println("exit");
+                System.out.println("Table checkout.");
+                dispose();
+                System.exit(0);
+            }
+        });
 
         // requsting the updated list from the db
         writer.println("products");

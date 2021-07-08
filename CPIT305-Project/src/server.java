@@ -344,6 +344,13 @@ class connectionHandler extends Thread {
 
                     if (line.equalsIgnoreCase("exit")) {
                         // TODO
+                        // closing kitchen or table windows is handled here by closing the connection and removing it from the hashmap
+                        this.connection.close();
+                        if(isKitchen){
+                            //stopped here
+                            server.theKitchen = null;
+                        }
+                        server.tableConnections.remove(tableNumber);
                         break;
                     } else if (line.startsWith("products")) {
                         // client want to get the list of products

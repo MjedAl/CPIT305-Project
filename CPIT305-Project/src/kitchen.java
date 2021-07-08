@@ -1,8 +1,11 @@
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -36,6 +39,9 @@ class listenForOrders extends Thread {
         while (true) {
             // recevied new order.
             // newOrder # table id # order # time
+            if(!scanner.hasNextLine()){
+                break;
+            }
             line = scanner.nextLine();
             System.out.println("Command is : " + line);
             String[] orderDetails = line.split("\\#");
@@ -102,6 +108,19 @@ public class kitchen extends javax.swing.JFrame {
         initComponents();
         // create a the class for the menu GUI
         this.menueGUI = new menu(connection, scanner, writer, products);
+        
+        // handling window closing event
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent ev) {
+                // on close write exit so it will be handled by the server
+                writer.println("exit");
+                System.out.println("Kitchen is closed!");
+                dispose();
+                System.exit(0);
+            }
+        });
 
         // request latest version of products
         writer.println("products");
