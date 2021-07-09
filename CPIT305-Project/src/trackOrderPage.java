@@ -43,7 +43,8 @@ public class trackOrderPage extends javax.swing.JFrame {
                 totalMinitues+= this.productsInCart.get(i).getEstimatedTimeInMintiues();
             }
             int avgTime = totalMinitues/this.productsInCart.size();
-            orderStatus.setText("Order in-progress\t\tEstimated time:"+avgTime+" Mintiues");
+            orderStatus.setText("Order in-progress");
+            eta.setText("Estimated time:"+avgTime+" Mintiues");
         } else if (status == 2) {
             orderStatus.setText("Order is coming for you :)");
             statusProgressbar.setValue(2);
@@ -86,6 +87,7 @@ public class trackOrderPage extends javax.swing.JFrame {
         saveChangeBtn = new javax.swing.JButton();
         statusProgressbar = new javax.swing.JProgressBar();
         orderStatus = new javax.swing.JLabel();
+        eta = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -186,7 +188,8 @@ public class trackOrderPage extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(orderStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(orderStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(eta, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(editOrderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
@@ -211,7 +214,9 @@ public class trackOrderPage extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(orderStatus)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(eta))
                     .addComponent(editOrderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(46, Short.MAX_VALUE))
         );
@@ -314,6 +319,7 @@ public class trackOrderPage extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel editOrderPanel;
+    private javax.swing.JLabel eta;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel orderIdText;
