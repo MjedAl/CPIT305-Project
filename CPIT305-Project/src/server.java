@@ -181,7 +181,6 @@ class connectionHandler extends Thread {
         return "Ok";
     }
 
-    // TODO
     // this method will unreserver the quantites
     // order will be like this
     public void unreserverOrderQuantites(String order) {
@@ -203,7 +202,7 @@ class connectionHandler extends Thread {
     }
 
     public String sendOrderToKitchen(String order) {
-        // TODO check if order is valid first..
+        // check if order is valid first
         String orderReserveStatus = validateOrder(order);
         if (orderReserveStatus.startsWith("Ok")) {
             // send order to the kitchen socket

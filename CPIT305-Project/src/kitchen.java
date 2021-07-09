@@ -23,14 +23,12 @@ import javax.swing.table.DefaultTableModel;
  */
 class listenForOrders extends Thread {
 
-    private Socket connection;
     private Scanner scanner;
     private PrintWriter writer;
     private kitchen kitchenGUI;
 
-    public listenForOrders(kitchen kitchenGUI, Socket connection, Scanner scanner, PrintWriter writer) {
+    public listenForOrders(kitchen kitchenGUI, Scanner scanner, PrintWriter writer) {
         this.kitchenGUI = kitchenGUI;
-        this.connection = connection;
         this.scanner = scanner;
         this.writer = writer;
     }
@@ -48,16 +46,17 @@ class listenForOrders extends Thread {
         String line;
         System.out.println("Kitchen is lisining for commands.");
         while (true) {
-            // recevied new order.
-            // newOrder # table id # order # time
-            if(!scanner.hasNextLine()){
+            if (!scanner.hasNextLine()) {
                 break;
             }
             line = scanner.nextLine();
             System.out.println("Command is : " + line);
             String[] orderDetails = line.split("\\#");
             DefaultTableModel model = (DefaultTableModel) kitchenGUI.ordersTable.getModel();
+
             if (orderDetails[0].equalsIgnoreCase("newOrder")) {
+                // recevied new order.
+                // newOrder # table id # order # time 
                 model.addRow(new Object[]{orderDetails[1], orderDetails[2].replaceAll("\\+", "\n "), orderDetails[3], orderDetails[4], "Recevied"});
             } else if (orderDetails[0].equalsIgnoreCase("updateOrder")) {
                 // we look for the row of the order that we want to update
@@ -80,7 +79,6 @@ class listenForOrders extends Thread {
                 //server wants us to update the products list
                 System.out.println("Server wants us to update the products list.. okay requesting latest version..");
                 writer.println("products");
-                // 
                 try {
                     ObjectInputStream objectInputStream = new ObjectInputStream(kitchenGUI.connection.getInputStream());
                     this.kitchenGUI.setProducts((ArrayList<product>) objectInputStream.readObject());
@@ -119,13 +117,13 @@ public class kitchen extends javax.swing.JFrame {
         initComponents();
         // create a the class for the menu GUI
         this.menueGUI = new menu(connection, scanner, writer, products);
-        
         // handling window closing event
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent ev) {
                 // on close write exit so it will be handled by the server
+                // TODO tell to close all orders first
                 writer.println("exit");
                 System.out.println("Kitchen is closed!");
                 dispose();
@@ -139,7 +137,7 @@ public class kitchen extends javax.swing.JFrame {
         try {
             objectInputStream = new ObjectInputStream(this.connection.getInputStream());
             this.products = (ArrayList<product>) objectInputStream.readObject();
-            this.menueGUI.setProducts(products);// needed?
+            this.menueGUI.setProducts(products);
             this.menueGUI.refreshList();
         } catch (IOException ex) {
             Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
@@ -147,7 +145,7 @@ public class kitchen extends javax.swing.JFrame {
             Logger.getLogger(kitchen.class.getName()).log(Level.SEVERE, null, ex);
         }
         // create a thread that will keep lisineing for orders.
-        this.ordersThread = new listenForOrders(this, connection, scanner, writer);
+        this.ordersThread = new listenForOrders(this, scanner, writer);
         ordersThread.start();
         this.setVisible(true);
     }
@@ -252,7 +250,7 @@ public class kitchen extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void editMenuBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMenuBtnActionPerformed
         this.menueGUI.setVisible(true);
     }//GEN-LAST:event_editMenuBtnActionPerformed
@@ -284,7 +282,7 @@ public class kitchen extends javax.swing.JFrame {
     }//GEN-LAST:event_confirmOrderBtnActionPerformed
 
     private void orderReadyBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orderReadyBtnActionPerformed
-         int[] selectedIndexes = ordersTable.getSelectedRows();
+        int[] selectedIndexes = ordersTable.getSelectedRows();
         for (int i = 0; i < selectedIndexes.length; i++) {
             //
             if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Confirmed")) {
@@ -293,10 +291,9 @@ public class kitchen extends javax.swing.JFrame {
                 writer.println("orderStatusUpdate:2:" + orderID);
                 ordersTable.setValueAt("Ready", selectedIndexes[i], 4);
                 //
-            }else if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Recevied")) {
+            } else if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Recevied")) {
                 JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " need to be confirmed first", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-            else {
+            } else {
                 JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " is ready from a while", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }

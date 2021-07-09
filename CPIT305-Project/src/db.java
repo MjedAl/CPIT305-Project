@@ -83,16 +83,13 @@ public class db {
         } else {
             try {
                 this.setup = true;
-                //1-load mySql Driver
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 // local db
                 con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
                 // online db
                 //con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
 
-                //3-create statement
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                //4- use statement to execute any sql commands
                 stat.execute("create table if not exists products (ID int primary key AUTO_INCREMENT, name char(20),price double, quantity int)");
                 return true;
             } catch (ClassNotFoundException ex) {

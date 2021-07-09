@@ -1,12 +1,8 @@
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -249,7 +245,7 @@ public class menu extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Product has been added", "OK", JOptionPane.DEFAULT_OPTION);
 
         } catch (NumberFormatException e) {
-            // print something
+            // TODO print something
         }
     }//GEN-LAST:event_addProductBtnActionPerformed
 
@@ -261,7 +257,6 @@ public class menu extends javax.swing.JFrame {
             // ID
             int id = (Integer) productsTable.getValueAt(productsIndxes[i], 0);
             writer.println("deleteProduct:" + id);
-            //
             // remove from the view
             model.removeRow(productsIndxes[i]);
         }
@@ -269,16 +264,12 @@ public class menu extends javax.swing.JFrame {
 
     private void saveBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
         int[] productsIndxes = productsTable.getSelectedRows();
-        DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
-
         for (int i = 0; i < productsIndxes.length; i++) {
-            // ID
             int id = (Integer) productsTable.getValueAt(productsIndxes[i], 0);
             String name = (String) productsTable.getValueAt(productsIndxes[i], 1);
             double price = (Double) productsTable.getValueAt(productsIndxes[i], 2);
             int quantity = (Integer) productsTable.getValueAt(productsIndxes[i], 3);
             writer.println("updateProduct:" + id + ":" + name + ":" + price + ":" + quantity);
-            //
         }
     }//GEN-LAST:event_saveBtnActionPerformed
 
