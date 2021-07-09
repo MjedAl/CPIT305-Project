@@ -262,7 +262,6 @@ public class table extends javax.swing.JFrame {
     private void initComponents() {
 
         tableNumLabel = new javax.swing.JLabel();
-        leaveBtn = new javax.swing.JButton();
         cartBtn = new javax.swing.JButton();
         addBtn = new javax.swing.JButton();
         scrollPane = new javax.swing.JScrollPane();
@@ -272,9 +271,6 @@ public class table extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         tableNumLabel.setText("Table number : ");
-
-        leaveBtn.setText("Leave");
-        leaveBtn.setToolTipText("");
 
         cartBtn.setText("Cart (0)");
         cartBtn.setToolTipText("");
@@ -333,9 +329,6 @@ public class table extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tableNumLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(leaveBtn)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(addBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
@@ -350,9 +343,7 @@ public class table extends javax.swing.JFrame {
                 .addGap(16, 16, 16)
                 .addComponent(tableNumLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(leaveBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -391,7 +382,6 @@ public class table extends javax.swing.JFrame {
     private javax.swing.JButton addBtn;
     private javax.swing.JButton cartBtn;
     private javax.swing.JButton currentOrdersBtn;
-    private javax.swing.JButton leaveBtn;
     private javax.swing.JTable productsTable;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel tableNumLabel;

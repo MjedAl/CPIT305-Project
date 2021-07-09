@@ -48,7 +48,7 @@ public class server {
         //Write the current date on top of file
         LocalDateTime d = LocalDateTime.now();
         String formattedDate = d.format(DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss"));
-        System.out.println("Current Date: " + formattedDate+"\n");
+        System.out.println("Current Date: " + formattedDate + "\n");
 
         try {
             //1-create server socket
@@ -68,11 +68,12 @@ public class server {
                 handler.start();
                 connections.add(handler);
                 System.out.println("Connection recevied and thread was made for it...");
+                System.err.println();
             }
         } catch (dbNotSettedUpException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         } catch (SQLException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         }
     }
     // TODO add a method that will create a folder logs, and the date of today.
@@ -83,9 +84,9 @@ public class server {
         try {
             server.products = server.theDB.getProducts();
         } catch (dbNotSettedUpException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         } catch (SQLException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         }
         // tell all clients to update their products list
         for (int i = 0; i < connections.size(); i++) {
@@ -112,7 +113,7 @@ class connectionHandler extends Thread {
             this.scan = new Scanner(is);
             this.wrt = new PrintWriter(os, true);
         } catch (IOException ex) {
-            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         }
     }
 
@@ -163,7 +164,7 @@ class connectionHandler extends Thread {
                         try {
                             server.theDB.updateProductQuantity(server.products.get(j).getId(), server.products.get(j).getQuantity());
                         } catch (SQLException ex) {
-                            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            System.err.println("Error " + ex);
                         }
                     } else {
                         quantityNotEnough += server.products.get(j).getName() + " ";
@@ -193,7 +194,7 @@ class connectionHandler extends Thread {
                     try {
                         server.theDB.updateProductQuantity(server.products.get(j).getId(), server.products.get(j).getQuantity());
                     } catch (SQLException ex) {
-                        Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        System.err.println("Error " + ex);
                     }
                 }
             }

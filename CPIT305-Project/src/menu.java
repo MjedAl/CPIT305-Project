@@ -245,7 +245,7 @@ public class menu extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Product has been added", "OK", JOptionPane.DEFAULT_OPTION);
 
         } catch (NumberFormatException e) {
-            // TODO print something
+            JOptionPane.showMessageDialog(null, "Incorrect format", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_addProductBtnActionPerformed
 
