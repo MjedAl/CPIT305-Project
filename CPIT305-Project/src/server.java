@@ -317,7 +317,7 @@ class connectionHandler extends Thread {
                     // check if table already registred with same id
                     if (server.tableConnections.get(tableNumber) != null) {
                         wrt.println("rejected:1:Table with the same number already exists!");
-                        rejected=true;
+                        rejected = true;
                     }
                     wrt.println("accepted");
                 } catch (NumberFormatException e) {
@@ -343,14 +343,15 @@ class connectionHandler extends Thread {
                             + "- commands is :" + line);
 
                     if (line.equalsIgnoreCase("exit")) {
-                        // TODO
-                        // closing kitchen or table windows is handled here by closing the connection and removing it from the hashmap
+                        // closing kitchen or table windows is handled here by closing the connection and removing it from the hashmap and array lists
+                        server.connections.remove(this);
                         this.connection.close();
-                        if(isKitchen){
+                        if (isKitchen) {
                             //stopped here
                             server.theKitchen = null;
+                        } else {
+                            server.tableConnections.remove(tableNumber);
                         }
-                        server.tableConnections.remove(tableNumber);
                         break;
                     } else if (line.startsWith("products")) {
                         // client want to get the list of products
