@@ -1,8 +1,11 @@
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
@@ -34,6 +37,14 @@ class listenForOrders extends Thread {
 
     @Override
     public void run() {
+        File f= new File("Kitchen LogFile");
+        f.mkdir();
+        try {
+            System.setOut(new PrintStream("Kitchen LogFile\\KitchenCommand.txt"));
+            System.setErr(new PrintStream("Kitchen LogFile\\KitchenError.txt"));
+        } catch (FileNotFoundException ex) {
+           
+        }
         String line;
         System.out.println("Kitchen is lisining for commands.");
         while (true) {

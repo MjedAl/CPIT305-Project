@@ -2,8 +2,11 @@
 import java.awt.PopupMenu;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.ResultSet;
@@ -39,6 +42,14 @@ class listenForServerUpdates extends Thread {
 
     @Override
     public void run() {
+        File f= new File("Table LogFile");
+        f.mkdir();
+        try {
+            System.setOut(new PrintStream("Table LogFile\\TableCommand.txt"));
+            System.setErr(new PrintStream("Table LogFile\\TableError.txt"));
+        } catch (FileNotFoundException ex) {
+           
+        }
         String line;
         System.out.println("Table is lisining for commands.");
         while (true) {

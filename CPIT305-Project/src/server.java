@@ -3,6 +3,8 @@ import java.io.*;
 import java.net.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -35,6 +37,19 @@ public class server {
     public static ArrayList<product> products;
 
     public static void main(String[] args) throws IOException {
+
+        //create folder to store all server log File
+        File f = new File("Server LogFile");
+        f.mkdir();
+        //set the default output to new folder to store all the command
+        System.setOut(new PrintStream("Server LogFile\\Command.txt"));
+        //set the default error to new folder to store all the error message
+        System.setErr(new PrintStream("Server LogFile\\Error.txt"));
+        //Write the current date on top of file
+        LocalDateTime d = LocalDateTime.now();
+        String formattedDate = d.format(DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss"));
+        System.out.println("Current Date: " + formattedDate+"\n");
+
         try {
             //1-create server socket
             ServerSocket srv = new ServerSocket(1900);
