@@ -36,7 +36,6 @@ public class trackOrderPage extends javax.swing.JFrame {
         } else if (status == 1) {
             editOrderPanel.setVisible(false);
             orderStatus.setText("Order in-progress");
-
             statusProgressbar.setValue(1);
 
             // order got aproved so stop the editable from being editied

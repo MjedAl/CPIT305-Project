@@ -306,6 +306,8 @@ public class kitchen extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " need to be confirmed first", "Error", JOptionPane.ERROR_MESSAGE);
             }else if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Rejected")) {
                 JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " is rejected", "Error", JOptionPane.ERROR_MESSAGE);
+            }else if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Ready")) {
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " is already Ready", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_orderReadyBtnActionPerformed
