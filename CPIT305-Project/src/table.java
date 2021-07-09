@@ -4,6 +4,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintStream;
@@ -42,15 +43,27 @@ class listenForServerUpdates extends Thread {
 
     @Override
     public void run() {
-        File f= new File("Table LogFile");
-        f.mkdir();
         try {
-            System.setOut(new PrintStream("Table LogFile\\TableCommand.txt"));
-            System.setErr(new PrintStream("Table LogFile\\TableError.txt"));
+            
+            File f = new File("LogFiles\\Table LogFile");
+        f.mkdir();
+        
+            //create new file for all Table command
+            FileOutputStream tableCommand = new FileOutputStream("LogFiles\\Table LogFile\\Table Command.txt", true);
+            
+            //create new file for all Table Error
+            FileOutputStream tableError = new FileOutputStream("LogFiles\\Table LogFile\\Table Error.txt", true);
+            
+            //set the default output to new file to store all the command
+            System.setOut(new PrintStream(tableCommand));
+            
+            //set the default output to new file to store all the Error message
+            System.setErr(new PrintStream(tableError));
         } catch (FileNotFoundException ex) {
-           
+            System.err.println("Error " + ex);
         }
         String line;
+        System.out.println("/////////////////////////////////////////");
         System.out.println("Table is lisining for commands.");
         while (true) {
 
@@ -84,9 +97,9 @@ class listenForServerUpdates extends Thread {
                     ObjectInputStream objectInputStream = new ObjectInputStream(this.connection.getInputStream());
                     this.tableGUI.products = (ArrayList<product>) objectInputStream.readObject();
                 } catch (IOException ex) {
-                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+                    System.err.println("Error " + ex);
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+                     System.err.println("Error " + ex);
                 }
                 this.tableGUI.refreshListView();
             }
@@ -156,9 +169,9 @@ public class table extends javax.swing.JFrame {
             products = (ArrayList<product>) objectInputStream.readObject();
             refreshListView();
         } catch (IOException ex) {
-            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(table.class.getName()).log(Level.SEVERE, null, ex);
+             System.err.println("Error " + ex);
         }
 
         new listenForServerUpdates(connection, scanner, writer, this).start();
