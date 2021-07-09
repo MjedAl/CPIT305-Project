@@ -76,8 +76,6 @@ public class server {
             System.err.println("Error " + ex);
         }
     }
-    // TODO add a method that will create a folder logs, and the date of today.
-    // then create two txt file inside them. one for normal logs and other for errors
 
     // something changed in the db so first we update the list for our self before telling everyone to update their list
     public static void updateProductsForALl() {
@@ -117,7 +115,6 @@ class connectionHandler extends Thread {
         }
     }
 
-    // TODO
     // This method will take an order and check if ALL quantites is found it will continue
     // if not it will not reserve ANYTHING and it will return
     // if quantity for all is found it will reserve from other method reserveOrderQuantites
@@ -213,7 +210,9 @@ class connectionHandler extends Thread {
             // send the order details to the kitchen print writer
             // table id # order # time # order ID
             PrintWriter wrt = server.theKitchen.wrt;
-            wrt.println("newOrder#" + this.tableNumber + "#" + order + "#" + "orderTime" + "#" + currentOrderNum);
+            LocalDateTime d = LocalDateTime.now();
+            String formattedDate = d.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            wrt.println("newOrder#" + this.tableNumber + "#" + order + "#" + formattedDate + "#" + currentOrderNum);
             return "accepted:" + currentOrderNum;
         }
         return orderReserveStatus;
@@ -443,8 +442,6 @@ class connectionHandler extends Thread {
                                 server.theDB.removeProduct(id);
                                 // tell everyone to update their list
                                 server.updateProductsForALl();
-                            } else {
-                                // TODO add more cases?
                             }
                         }
                     }
