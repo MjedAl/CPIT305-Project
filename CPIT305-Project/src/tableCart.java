@@ -12,13 +12,13 @@ import javax.swing.table.DefaultTableModel;
  * @author Mjed
  */
 public class tableCart extends javax.swing.JFrame {
-    
+
     private ArrayList<product> productsInCart;
     private table theTable;
     private Socket connection;
     private Scanner scanner;
     private PrintWriter writer;
-    
+
     public tableCart(table theTable, Socket connection, Scanner scanner, PrintWriter writer) {
         this.theTable = theTable;
         this.connection = connection;
@@ -26,11 +26,11 @@ public class tableCart extends javax.swing.JFrame {
         this.writer = writer;
         initComponents();
     }
-    
+
     public void setProductsInCart(ArrayList<product> productsInCart) {
         this.productsInCart = productsInCart;
     }
-    
+
     public void redrawTable() {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
@@ -39,7 +39,7 @@ public class tableCart extends javax.swing.JFrame {
         }
         calcuatePrice();
     }
-    
+
     private void calcuatePrice() {
         double total = 0;
         for (product item : productsInCart) {
@@ -173,7 +173,7 @@ public class tableCart extends javax.swing.JFrame {
 
             // first update the products in cart from the table, maybe user changed the quantity.
             String productsStr = "order:";
-            
+
             for (int i = 0; i < productsTable.getRowCount(); i++) {
                 // search for the object of the prodcut
                 for (int j = 0; j < this.productsInCart.size(); j++) {
@@ -196,13 +196,16 @@ public class tableCart extends javax.swing.JFrame {
             // remove the last " + "
             //productsStr = productsStr.substring(0, productsStr.length() - 3);
             writer.println(productsStr);
-            
+
             String response = "";
+            // keep waiting until we get response from the other thread
             while (theTable.ServerReponse.equalsIgnoreCase("")) {
-                // keep waiting until we get response from the other thread
+                // don't remove this empty sout it will break things up :)
+                System.out.print("");
             }
+            System.out.println("We got response from server");
             response = theTable.ServerReponse;
-           
+
             int orderNumber = -1;
             if (response.startsWith("accepted")) {
                 JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
@@ -232,7 +235,7 @@ public class tableCart extends javax.swing.JFrame {
         // remove selected id from list, update cart label
         int[] productsIndxes = productsTable.getSelectedRows();
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
-        
+
         for (int i = 0; i < productsIndxes.length; i++) {
             // remove the selected product from the array list
             // first we need to find the product in the cart
@@ -240,7 +243,7 @@ public class tableCart extends javax.swing.JFrame {
             productsInCart.remove(productsIndxes[i]);
             // remove from the view
             model.removeRow(productsIndxes[i]);
-            
+
         }
         calcuatePrice();
         this.theTable.updateCartBtn("Cart (" + productsInCart.size() + ")");
