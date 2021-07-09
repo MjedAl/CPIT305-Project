@@ -424,7 +424,8 @@ class connectionHandler extends Thread {
                                 String name = (line.split(":")[1]);
                                 double price = Double.parseDouble(line.split(":")[2]);
                                 int quantity = Integer.parseInt(line.split(":")[3]);
-                                server.theDB.addProduct(name, price, quantity);
+                                int time = Integer.parseInt(line.split(":")[4]);
+                                server.theDB.addProduct(name, price, quantity, time);
                                 // tell everyone to update their list
                                 server.updateProductsForALl();
                             } else if (line.startsWith("updateProduct")) {
@@ -432,7 +433,8 @@ class connectionHandler extends Thread {
                                 String name = (line.split(":")[2]);
                                 double price = Double.parseDouble(line.split(":")[3]);
                                 int quantity = Integer.parseInt(line.split(":")[4]);
-                                server.theDB.updateProduct(id, name, price, quantity);
+                                int time = Integer.parseInt(line.split(":")[5]);
+                                server.theDB.updateProduct(id, name, price, quantity, time);
                                 // tell everyone to update their list
                                 server.updateProductsForALl();
                             } else if (line.startsWith("deleteProduct")) {

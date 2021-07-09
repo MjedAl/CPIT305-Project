@@ -28,7 +28,7 @@ public class menu extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.products.size(); i++) {
-            model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice(), this.products.get(i).getQuantity()});
+            model.addRow(new Object[]{this.products.get(i).getId(), this.products.get(i).getName(), this.products.get(i).getPrice(), this.products.get(i).getQuantity(),this.products.get(i).getEstimatedTimeInMintiues()});
         }
     }
 
@@ -67,6 +67,8 @@ public class menu extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         productQuantity = new javax.swing.JTextField();
         addProductBtn = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        productTime = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -91,14 +93,14 @@ public class menu extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Name", "Price", "Quantity"
+                "ID", "Name", "Price", "Quantity", "Time (minutes)"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Integer.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Integer.class, java.lang.Integer.class
             };
             boolean[] canEdit = new boolean [] {
-                false, true, true, true
+                false, true, true, true, true
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -141,6 +143,10 @@ public class menu extends javax.swing.JFrame {
             }
         });
 
+        jLabel5.setText("Finish Time (M)");
+
+        productTime.setToolTipText("");
+
         javax.swing.GroupLayout addProductPanelLayout = new javax.swing.GroupLayout(addProductPanel);
         addProductPanel.setLayout(addProductPanelLayout);
         addProductPanelLayout.setHorizontalGroup(
@@ -150,12 +156,14 @@ public class menu extends javax.swing.JFrame {
                 .addGroup(addProductPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
                     .addComponent(jLabel3)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(addProductPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(productName)
                     .addComponent(productPrice)
-                    .addComponent(productQuantity, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                    .addComponent(productQuantity, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+                    .addComponent(productTime, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
                 .addContainerGap())
             .addComponent(addProductBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -174,6 +182,10 @@ public class menu extends javax.swing.JFrame {
                 .addGroup(addProductPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(productQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(addProductPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(productTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addProductBtn))
         );
@@ -214,7 +226,7 @@ public class menu extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(addProductPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(deleteSelected))
-                .addContainerGap(107, Short.MAX_VALUE))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
 
         pack();
@@ -228,18 +240,21 @@ public class menu extends javax.swing.JFrame {
         String name;
         double price;
         int quantity;
+        int time;
 
         try {
             name = productName.getText();
             price = Double.parseDouble(productPrice.getText());
             quantity = Integer.parseInt(productQuantity.getText());
+            time = Integer.parseInt(productTime.getText());
             // sned product to server
             // add more validators here before sending
-            writer.println("addProduct:" + name + ":" + price + ":" + quantity);
+            writer.println("addProduct:" + name + ":" + price + ":" + quantity+":"+time);
             // clear fileds and hide panel
             productName.setText("");
             productPrice.setText("");
             productQuantity.setText("");
+            productTime.setText("");
             addProductPanel.setVisible(false);
             // show added
             JOptionPane.showMessageDialog(null, "Product has been added", "OK", JOptionPane.DEFAULT_OPTION);
@@ -269,7 +284,8 @@ public class menu extends javax.swing.JFrame {
             String name = (String) productsTable.getValueAt(productsIndxes[i], 1);
             double price = (Double) productsTable.getValueAt(productsIndxes[i], 2);
             int quantity = (Integer) productsTable.getValueAt(productsIndxes[i], 3);
-            writer.println("updateProduct:" + id + ":" + name + ":" + price + ":" + quantity);
+            int time = (Integer) productsTable.getValueAt(productsIndxes[i], 4);
+            writer.println("updateProduct:" + id + ":" + name + ":" + price + ":" + quantity + ":" + time);
         }
     }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -282,10 +298,12 @@ public class menu extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField productName;
     private javax.swing.JTextField productPrice;
     private javax.swing.JTextField productQuantity;
+    private javax.swing.JTextField productTime;
     private javax.swing.JTable productsTable;
     private javax.swing.JButton saveBtn;
     // End of variables declaration//GEN-END:variables

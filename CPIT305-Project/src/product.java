@@ -12,6 +12,7 @@ public class product implements Serializable {
 
     private int id;
     private String name;
+    private int estimatedTimeInMintiues = 0;
     private double price;
     private int quantity;
     private int requiredQuantity = 1; // default is 1
@@ -67,6 +68,21 @@ public class product implements Serializable {
         this.price = price;
         this.quantity = quantity;
         this.requiredQuantity = requiredQuantity;
+    }
+    public product(int id, String name, int estimatedTimeInMintiues, double price, int quantity) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.estimatedTimeInMintiues = estimatedTimeInMintiues;
+    }
+    
+    public int getEstimatedTimeInMintiues() {
+        return estimatedTimeInMintiues;
+    }
+
+    public void setEstimatedTimeInMintiues(int estimatedTimeInMintiues) {
+        this.estimatedTimeInMintiues = estimatedTimeInMintiues;
     }
 
     public int getRequiredQuantity() {
