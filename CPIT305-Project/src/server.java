@@ -121,7 +121,6 @@ class connectionHandler extends Thread {
     // if not it will not reserve ANYTHING and it will return
     // if quantity for all is found it will reserve from other method reserveOrderQuantites
     public String validateOrder(String order) {
-        System.out.println(order);
         // order format (x*y + x*y)
         // x == quantity
         // y == name of the order
@@ -249,11 +248,7 @@ class connectionHandler extends Thread {
                     int oldQuantity = Integer.parseInt(orders[i].split("\\*")[0]);
                     int newQuantity = Integer.parseInt(orders[i].split("\\*")[1]);
                     int newReserve = newQuantity - oldQuantity;
-                    System.out.println(oldQuantity);
-                    System.out.println(newQuantity);
-                    System.out.println(newReserve);
                     if (server.products.get(j).reserveQuantites(newReserve)) {
-                        System.out.println("bbb");
                         // quantity available and we did reserve it.
                         try {
                             server.theDB.updateProductQuantity(server.products.get(j).getId(), server.products.get(j).getQuantity());

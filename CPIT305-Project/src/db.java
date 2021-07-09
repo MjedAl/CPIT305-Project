@@ -18,7 +18,6 @@ public class db {
 
     private static db theDB = new db();
     private boolean setup = false;
-    private String dbConnectionString = "";
     private Connection con;
     private Statement stat;
 
@@ -43,7 +42,6 @@ public class db {
         while (resultSet.next()) {
             productsObj.add(new product(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getDouble("price"), resultSet.getInt("quantity")));
         }
-        System.out.println("Products returned");
         return productsObj;
     }
 
