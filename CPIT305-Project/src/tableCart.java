@@ -166,11 +166,34 @@ public class tableCart extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public void orderResponse(String response) {
+        System.out.println("We got response from server");
+        int orderNumber = -1;
+        if (response.startsWith("accepted")) {
+            JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
+            orderNumber = Integer.parseInt(response.split(":")[1]);
+            // open tracking page for the order
+            // open the order page
+            theTable.setVisible(true);
+            trackOrderPage orderPage = new trackOrderPage(productsInCart, theTable, connection, scanner, writer, orderNumber);
+            // save the tracking page to the main page
+            theTable.addNewTrackPage(orderPage);
+            // reset the cart
+            theTable.resetCart();
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
+            // show rejection reaseon
+            // redirect to home page
+            dispose();
+            theTable.setVisible(true);
+        }
+    }
+
     private void sendOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendOrderBtnActionPerformed
         if (productsInCart.size() == 0) {
             JOptionPane.showMessageDialog(null, "Pleae add some products first", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-
             // first update the products in cart from the table, maybe user changed the quantity.
             String productsStr = "order:";
 
@@ -193,40 +216,7 @@ public class tableCart extends javax.swing.JFrame {
             }
             System.out.println("Sending order: " + productsStr);
 
-            // remove the last " + "
-            //productsStr = productsStr.substring(0, productsStr.length() - 3);
             writer.println(productsStr);
-
-            String response = "";
-            // keep waiting until we get response from the other thread
-            while (theTable.ServerReponse.equalsIgnoreCase("")) {
-                // don't remove this empty sout it will break things up :)
-                System.out.print("");
-            }
-            System.out.println("We got response from server");
-            response = theTable.ServerReponse;
-
-            int orderNumber = -1;
-            if (response.startsWith("accepted")) {
-                JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
-                orderNumber = Integer.parseInt(response.split(":")[1]);
-                // open tracking page for the order
-                // open the order page
-                theTable.setVisible(true);
-                trackOrderPage orderPage = new trackOrderPage(productsInCart, theTable, connection, scanner, writer, orderNumber);
-                // save the tracking page to the main page
-                theTable.addNewTrackPage(orderPage);
-                // reset the cart
-                theTable.resetCart();
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(null, "Your order was rejected :(", "Rejected", JOptionPane.ERROR_MESSAGE);
-                // show rejection reaseon
-                // redirect to home page
-                dispose();
-                theTable.setVisible(true);
-            }
-            theTable.ServerReponse = "";
         }
 
     }//GEN-LAST:event_sendOrderBtnActionPerformed

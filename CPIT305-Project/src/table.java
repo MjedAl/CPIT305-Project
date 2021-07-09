@@ -62,9 +62,9 @@ class listenForServerUpdates extends Thread {
                     }
                 }
             } else if (line.startsWith("accepted")) {
-                tableGUI.ServerReponse = line;
+                tableGUI.cart.orderResponse(line);
             } else if (line.startsWith("rejected")) {
-                tableGUI.ServerReponse = line;
+                tableGUI.cart.orderResponse(line);
             } else if (line.startsWith("updateProducts")) {
                 // server wants us to udpate the products lsit
                 System.out.println("Okay updating list");
@@ -96,10 +96,8 @@ public class table extends javax.swing.JFrame {
     // the products list
     private ArrayList<product> productsInCart = new ArrayList<product>();
     // obj of the cart class
-    private tableCart cart;
+    public tableCart cart;
     // keep track of current order list.
-    public String ServerReponse = "";
-    // ^ to keep track of server latest response
 
     public ArrayList<trackOrderPage> orderPages = new ArrayList<trackOrderPage>();
 
