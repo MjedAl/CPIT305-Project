@@ -188,6 +188,7 @@ public class tableCart extends javax.swing.JFrame {
             dispose();
             theTable.setVisible(true);
         }
+        sendOrderBtn.setEnabled(true);
     }
 
     private void sendOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendOrderBtnActionPerformed
@@ -217,6 +218,8 @@ public class tableCart extends javax.swing.JFrame {
             System.out.println("Sending order: " + productsStr);
 
             writer.println(productsStr);
+
+            sendOrderBtn.setEnabled(false);
         }
 
     }//GEN-LAST:event_sendOrderBtnActionPerformed
