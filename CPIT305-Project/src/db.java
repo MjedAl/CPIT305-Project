@@ -18,7 +18,6 @@ public class db {
 
     private static db theDB = new db();
     private boolean setup = false;
-    private String dbConnectionString = "";
     private Connection con;
     private Statement stat;
 
@@ -41,26 +40,34 @@ public class db {
         ResultSet resultSet = stat.executeQuery("select * from products");
         ArrayList<product> productsObj = new ArrayList<product>();
         while (resultSet.next()) {
-            productsObj.add(new product(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getDouble("price"), resultSet.getInt("quantity")));
+            productsObj.add(new product(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getInt("minitues"), resultSet.getDouble("price"), resultSet.getInt("quantity")));
         }
-        System.out.println("Products returned");
         return productsObj;
     }
 
-    public void addProduct(String name, double price, int quantity) throws SQLException {
-        PreparedStatement pstat = con.prepareStatement("insert into products (name,price,quantity) values (?,?,?)");
+    public void addProduct(String name, double price, int quantity, int minitues) throws SQLException {
+        PreparedStatement pstat = con.prepareStatement("insert into products (name,price,quantity,minitues) values (?,?,?,?)");
         pstat.setString(1, name);
         pstat.setDouble(2, price);
         pstat.setInt(3, quantity);
+        pstat.setInt(4, minitues);
         pstat.execute();
     }
 
-    public void updateProduct(int id, String name, double price, int quantity) throws SQLException {
-        PreparedStatement pstat = con.prepareStatement("update products set name=?, price=?, quantity=? where id=?");
+    public void updateProduct(int id, String name, double price, int quantity, int minitues) throws SQLException {
+        PreparedStatement pstat = con.prepareStatement("update products set name=?, price=?, quantity=?, minitues=? where id=?");
         pstat.setString(1, name);
         pstat.setDouble(2, price);
         pstat.setInt(3, quantity);
-        pstat.setInt(4, id);
+        pstat.setInt(4, minitues);
+        pstat.setInt(5, id);
+        pstat.execute();
+    }
+
+    public void updateProductQuantity(int id, int quantity) throws SQLException {
+        PreparedStatement pstat = con.prepareStatement("update products set quantity=? where id=?");
+        pstat.setInt(1, quantity);
+        pstat.setInt(2, id);
         pstat.execute();
     }
 
@@ -76,17 +83,14 @@ public class db {
         } else {
             try {
                 this.setup = true;
-                //1-load mySql Driver
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 // local db
-                //con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
+                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
                 // online db
-                con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
+                //con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
 
-                //3-create statement
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                //4- use statement to execute any sql commands
-                stat.execute("create table if not exists products (ID int primary key AUTO_INCREMENT, name char(20),price double, quantity int)");
+                stat.execute("create table if not exists products (ID int primary key AUTO_INCREMENT, name char(20),price double, quantity int, minitues int)");
                 return true;
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(db.class.getName()).log(Level.SEVERE, null, ex);

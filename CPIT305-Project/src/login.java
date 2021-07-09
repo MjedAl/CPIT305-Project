@@ -87,7 +87,6 @@ public class login extends javax.swing.JFrame {
             Scanner scan = new Scanner(soc.getInputStream());
             PrintWriter wrt = new PrintWriter(soc.getOutputStream(), true);
             String tableNum = "";
-            //3-read and write
             String line;
             if (kitchen) {
                 wrt.println("Kitchen");

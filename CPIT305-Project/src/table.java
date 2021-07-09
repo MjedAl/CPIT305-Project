@@ -1,7 +1,12 @@
 
 import java.awt.PopupMenu;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.ResultSet;
@@ -13,6 +18,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -36,12 +42,23 @@ class listenForServerUpdates extends Thread {
 
     @Override
     public void run() {
+        File f= new File("Table LogFile");
+        f.mkdir();
+        try {
+            System.setOut(new PrintStream("Table LogFile\\TableCommand.txt"));
+            System.setErr(new PrintStream("Table LogFile\\TableError.txt"));
+        } catch (FileNotFoundException ex) {
+           
+        }
         String line;
         System.out.println("Table is lisining for commands.");
         while (true) {
 
             // recevied new order.
             // newOrder # table id # order # time
+            if(!scanner.hasNextLine()){
+                break;
+            }
             line = scanner.nextLine();
             String[] parts = line.split(":");
             System.out.println("We recevied the following command : " + line);
@@ -56,9 +73,9 @@ class listenForServerUpdates extends Thread {
                     }
                 }
             } else if (line.startsWith("accepted")) {
-                tableGUI.ServerReponse = line;
+                tableGUI.cart.orderResponse(line);
             } else if (line.startsWith("rejected")) {
-                tableGUI.ServerReponse = line;
+                tableGUI.cart.orderResponse(line);
             } else if (line.startsWith("updateProducts")) {
                 // server wants us to udpate the products lsit
                 System.out.println("Okay updating list");
@@ -90,10 +107,8 @@ public class table extends javax.swing.JFrame {
     // the products list
     private ArrayList<product> productsInCart = new ArrayList<product>();
     // obj of the cart class
-    private tableCart cart;
+    public tableCart cart;
     // keep track of current order list.
-    public String ServerReponse = "";
-    // ^ to keep track of server latest response
 
     public ArrayList<trackOrderPage> orderPages = new ArrayList<trackOrderPage>();
 
@@ -120,6 +135,19 @@ public class table extends javax.swing.JFrame {
         tableNumLabel.setText("Table number : " + tableID);
         // make obj for the cart
         cart = new tableCart(this, connection, scanner, writer);
+        
+        // handling window closing event
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent ev) {
+                // on close write exit so it will be handled by the server
+                writer.println("exit");
+                System.out.println("Table checkout.");
+                dispose();
+                System.exit(0);
+            }
+        });
 
         // requsting the updated list from the db
         writer.println("products");
@@ -145,7 +173,6 @@ public class table extends javax.swing.JFrame {
     public void refreshListView() {
         DefaultTableModel model = (DefaultTableModel) productsTable.getModel();
         model.setRowCount(0);
-
         for (int i = 0; i < this.products.size(); i++) {
             // only add products that are available to the table
             if (this.products.get(i).getQuantity() > 0) {
@@ -155,7 +182,6 @@ public class table extends javax.swing.JFrame {
         // compare the products that just got updated with the products in cart.
         // to update the products infomration that's in the cart and to see if a product was removed
         for (int i = 0; i < productsInCart.size(); i++) {
-
             boolean found = false;
             for (int j = 0; j < products.size(); j++) {
                 if (productsInCart.get(i).getId() == products.get(j).getId()) {
@@ -166,16 +192,22 @@ public class table extends javax.swing.JFrame {
                     found = true;
                     break;
                 }
-                // reached the end and a product in the cart is not found in the updated list == the product got removed
             }
+            // reached the end and a product in the cart is not found in the updated list == the product got removed
             if (!found) {
                 JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(i).getName() + " was removed from the menu. we will delete it from the cart.", "Whoops", JOptionPane.ERROR_MESSAGE);
                 productsInCart.remove(i);
                 cartBtn.setText("Cart (" + productsInCart.size() + ")");
             }
         }
+        // update the list for the cart
         this.cart.setProductsInCart(productsInCart);
         this.cart.redrawTable();
+//         update the list for all the tracking page (user is not tracking page and he did not confirm so he can change the quantites)
+//         TODO
+        for (int i = 0; i < this.orderPages.size(); i++) {
+            this.orderPages.get(i).updateProductsQuantites(products);
+        }
     }
 
     private void addToCart() {
@@ -230,7 +262,6 @@ public class table extends javax.swing.JFrame {
     private void initComponents() {
 
         tableNumLabel = new javax.swing.JLabel();
-        leaveBtn = new javax.swing.JButton();
         cartBtn = new javax.swing.JButton();
         addBtn = new javax.swing.JButton();
         scrollPane = new javax.swing.JScrollPane();
@@ -240,9 +271,6 @@ public class table extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         tableNumLabel.setText("Table number : ");
-
-        leaveBtn.setText("Leave");
-        leaveBtn.setToolTipText("");
 
         cartBtn.setText("Cart (0)");
         cartBtn.setToolTipText("");
@@ -301,9 +329,6 @@ public class table extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tableNumLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(leaveBtn)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(addBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
@@ -318,9 +343,7 @@ public class table extends javax.swing.JFrame {
                 .addGap(16, 16, 16)
                 .addComponent(tableNumLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(leaveBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -359,7 +382,6 @@ public class table extends javax.swing.JFrame {
     private javax.swing.JButton addBtn;
     private javax.swing.JButton cartBtn;
     private javax.swing.JButton currentOrdersBtn;
-    private javax.swing.JButton leaveBtn;
     private javax.swing.JTable productsTable;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel tableNumLabel;

@@ -3,6 +3,8 @@ import java.io.*;
 import java.net.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -35,6 +37,19 @@ public class server {
     public static ArrayList<product> products;
 
     public static void main(String[] args) throws IOException {
+
+        //create folder to store all server log File
+        File f = new File("Server LogFile");
+        f.mkdir();
+        //set the default output to new folder to store all the command
+        System.setOut(new PrintStream("Server LogFile\\Command.txt"));
+        //set the default error to new folder to store all the error message
+        System.setErr(new PrintStream("Server LogFile\\Error.txt"));
+        //Write the current date on top of file
+        LocalDateTime d = LocalDateTime.now();
+        String formattedDate = d.format(DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss"));
+        System.out.println("Current Date: " + formattedDate + "\n");
+
         try {
             //1-create server socket
             ServerSocket srv = new ServerSocket(1900);
@@ -53,24 +68,23 @@ public class server {
                 handler.start();
                 connections.add(handler);
                 System.out.println("Connection recevied and thread was made for it...");
+                System.err.println();
             }
         } catch (dbNotSettedUpException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         } catch (SQLException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         }
     }
-    // TODO add a method that will create a folder logs, and the date of today.
-    // then create two txt file inside them. one for normal logs and other for errors
 
     // something changed in the db so first we update the list for our self before telling everyone to update their list
     public static void updateProductsForALl() {
         try {
             server.products = server.theDB.getProducts();
         } catch (dbNotSettedUpException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         } catch (SQLException ex) {
-            Logger.getLogger(server.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         }
         // tell all clients to update their products list
         for (int i = 0; i < connections.size(); i++) {
@@ -97,28 +111,97 @@ class connectionHandler extends Thread {
             this.scan = new Scanner(is);
             this.wrt = new PrintWriter(os, true);
         } catch (IOException ex) {
-            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         }
     }
 
-    // TODO
-    public boolean validateOrder(String order) {
-        return true;
+    // This method will take an order and check if ALL quantites is found it will continue
+    // if not it will not reserve ANYTHING and it will return
+    // if quantity for all is found it will reserve from other method reserveOrderQuantites
+    public String validateOrder(String order) {
+        // order format (x*y + x*y)
+        // x == quantity
+        // y == name of the order
+        String[] orders = order.split("\\+");
+        // first validate all the orders with quantities
+        // if ALL are okay only then go back and reserve it
+        for (int i = 0; i < orders.length; i++) {
+            // orders[i] == x*y
+            // find the object of the prodcut
+            for (int j = 0; j < server.products.size(); j++) {
+                if (server.products.get(i).getName().equalsIgnoreCase(orders[i].split("\\*")[1].trim())) {
+                    if (server.products.get(i).getQuantity() < Integer.parseInt(orders[i].split("\\*")[0].trim())) {
+                        return "error:Quantity is not available in product " + server.products.get(i).getName();
+                    }
+                }
+            }
+        }
+        // if we reached until here it means that the order is valid and all quantites is found. so we reserve them.
+        return (reserveOrderQuantites(order));
     }
-    // TODO
 
-    public void reserveOrderQuantites(String order) {
+    // this method will reserver the quantites it will do it one order by one. if one product quantity is not enough it will skip it and not cancle the whole order
+    public String reserveOrderQuantites(String order) {
 
+        String quantityNotEnough = "Missing:";
+
+        // reserve all orders.
+        // order format (x*y + x*y)
+        // x == quantity
+        // y == name of the order
+        String[] orders = order.split("\\+");
+
+        for (int i = 0; i < orders.length; i++) {
+            // orders[i] == x*y
+            // find the object of the prodcut
+            for (int j = 0; j < server.products.size(); j++) {
+                if (server.products.get(j).getName().equalsIgnoreCase(orders[i].split("\\*")[1].trim())) {
+                    if (server.products.get(j).reserveQuantites(Integer.parseInt(orders[i].split("\\*")[0].trim()))) {
+                        // quantity available and we did reserve it.
+                        try {
+                            server.theDB.updateProductQuantity(server.products.get(j).getId(), server.products.get(j).getQuantity());
+                        } catch (SQLException ex) {
+                            System.err.println("Error " + ex);
+                        }
+                    } else {
+                        quantityNotEnough += server.products.get(j).getName() + " ";
+                    }
+                    break;
+                }
+            }
+        }
+        // something IS missing return what it was.
+        if (!quantityNotEnough.equalsIgnoreCase("Missing:")) {
+            return quantityNotEnough;
+        }
+        // else return ok.
+        return "Ok";
     }
-    // TODO
 
+    // this method will unreserver the quantites
+    // order will be like this
     public void unreserverOrderQuantites(String order) {
-
+        String[] orders = order.split("\\+");
+        for (int i = 0; i < orders.length; i++) {
+            // orders[i] == x*y
+            // find the object of the prodcut
+            for (int j = 0; j < server.products.size(); j++) {
+                if (server.products.get(j).getName().equalsIgnoreCase(orders[i].split("\\*")[1].trim())) {
+                    server.products.get(j).unreserveQuantites(Integer.parseInt(orders[i].split("\\*")[0].trim()));
+                    try {
+                        server.theDB.updateProductQuantity(server.products.get(j).getId(), server.products.get(j).getQuantity());
+                    } catch (SQLException ex) {
+                        System.err.println("Error " + ex);
+                    }
+                }
+            }
+        }
     }
 
-    public int sendOrderToKitchen(String order) {
-        // TODO check if order is valid first..
-        if (validateOrder(order)) {
+    public String sendOrderToKitchen(String order) {
+        // check if order is valid first
+        String orderReserveStatus = validateOrder(order);
+        if (orderReserveStatus.startsWith("Ok")) {
             // send order to the kitchen socket
             // add the order to the server hash map of orders and table id
             int currentOrderNum = server.orderID;
@@ -127,30 +210,82 @@ class connectionHandler extends Thread {
             // send the order details to the kitchen print writer
             // table id # order # time # order ID
             PrintWriter wrt = server.theKitchen.wrt;
-            wrt.println("newOrder#" + this.tableNumber + "#" + order.replace("order:", "") + "#" + "orderTime" + "#" + currentOrderNum);
-            return currentOrderNum;
+            LocalDateTime d = LocalDateTime.now();
+            String formattedDate = d.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            wrt.println("newOrder#" + this.tableNumber + "#" + order + "#" + formattedDate + "#" + currentOrderNum);
+            return "accepted:" + currentOrderNum;
         }
-        return -1;
+        return orderReserveStatus;
     }
     // some order got updated so send it's information to the kitchen
 
-    public boolean sendUpdatedOrderToKitchen(String line) {
-        String order = line.split(":")[1];
-        String orderNumber = line.split(":")[2];
-        if (validateOrder(order)) {
-            PrintWriter wrt = server.theKitchen.wrt;
-            wrt.println("updateOrder#" + this.tableNumber + "#" + order.replace("order:", "") + "#" + "time" + "#" + orderNumber);
-            return true;
-        }
-        return false;
-    }
-    // client want's to delete some order. send the order to the kitchen
+    // this method will recevie a line of prodcut whitch the user want's to update it will update it in the db in return the newly updated line so the kitchen can recevie it
+    // information format as follows
+    // X:Y:X
+    // X == old quantity
+    // Y == new quantity
+    // Z == product name
+    // only send the udpated quantity
+    // example:
+    // user order 5 pices and it was reserved for him
+    // now user adjusted the quantity to 1
+    // so only 1-5 will be sent == -4
+    // so we can readd 4 pices to the quantity    
+    public String updateOrder(String order) {
 
+        // reserve all orders.
+        // order format (x*y + x*y)
+        // x == quantity
+        // y == name of the order
+        String[] orders = order.split("\\+");
+        String newOrder = "Ok:";
+        String missingSomething = "missing:";
+        for (int i = 0; i < orders.length; i++) {
+            // orders[i] == X:Y:X
+            // find the object of the prodcut
+            for (int j = 0; j < server.products.size(); j++) {
+                if (server.products.get(j).getName().equalsIgnoreCase(orders[i].split("\\*")[2].trim())) {
+                    int oldQuantity = Integer.parseInt(orders[i].split("\\*")[0]);
+                    int newQuantity = Integer.parseInt(orders[i].split("\\*")[1]);
+                    int newReserve = newQuantity - oldQuantity;
+                    if (server.products.get(j).reserveQuantites(newReserve)) {
+                        // quantity available and we did reserve it.
+                        try {
+                            server.theDB.updateProductQuantity(server.products.get(j).getId(), server.products.get(j).getQuantity());
+                        } catch (SQLException ex) {
+                            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else {
+                        missingSomething += server.products.get(j).getName();
+                    }
+                    newOrder += newQuantity + "*" + server.products.get(j).getName() + "+";
+                    break;
+                }
+            }
+        }
+        if (!missingSomething.equalsIgnoreCase("missing:")) {
+            return missingSomething;
+        }
+        return newOrder;
+    }
+
+    public String sendUpdatedOrderToKitchen(String line) {
+        String order = line.split(":")[0];
+        String orderNumber = line.split(":")[1];
+        String updateStatus = updateOrder(order);
+        if (updateStatus.startsWith("Ok")) {
+            PrintWriter wrt = server.theKitchen.wrt;
+            wrt.println("updateOrder#" + this.tableNumber + "#" + updateStatus.replaceAll("Ok:", "") + "#" + "time" + "#" + orderNumber);
+            return "accepted";
+        }
+        return updateStatus;
+    }
+
+    // client want's to delete some order. send the order to the kitchen
     public boolean RemoveOrderFromKitchen(String line) {
-        String order = line.split(":")[1];
-        // TODO re add the reserved order quantites
-        String orderNumber = line.split(":")[2];
-        //unreserverOrderQuantites(order);
+        String order = line.split(":")[0];
+        String orderNumber = line.split(":")[1];
+        unreserverOrderQuantites(order);
         PrintWriter wrt = server.theKitchen.wrt;
         wrt.println("removeOrder#" + orderNumber);
         return true;
@@ -190,7 +325,8 @@ class connectionHandler extends Thread {
                     this.tableNumber = Integer.parseInt(line.split(":")[1]);
                     // check if table already registred with same id
                     if (server.tableConnections.get(tableNumber) != null) {
-                    wrt.println("rejected:1:Table with the same number already exists!");
+                        wrt.println("rejected:1:Table with the same number already exists!");
+                        rejected = true;
                     }
                     wrt.println("accepted");
                 } catch (NumberFormatException e) {
@@ -216,7 +352,15 @@ class connectionHandler extends Thread {
                             + "- commands is :" + line);
 
                     if (line.equalsIgnoreCase("exit")) {
-                        // TODO
+                        // closing kitchen or table windows is handled here by closing the connection and removing it from the hashmap and array lists
+                        server.connections.remove(this);
+                        this.connection.close();
+                        if (isKitchen) {
+                            //stopped here
+                            server.theKitchen = null;
+                        } else {
+                            server.tableConnections.remove(tableNumber);
+                        }
                         break;
                     } else if (line.startsWith("products")) {
                         // client want to get the list of products
@@ -229,28 +373,41 @@ class connectionHandler extends Thread {
                         if (!isKitchen) {
                             // Table
                             if (line.startsWith("order:")) {
-                                int orderID = sendOrderToKitchen(line);
-                                if (orderID != -1) {
-                                    wrt.println("accepted:" + orderID);
+                                String orderStatus = sendOrderToKitchen(line.replace("order:", ""));
+                                if (orderStatus.startsWith("accepted:")) {
+                                    wrt.println("accepted:" + orderStatus.split(":")[1]);
                                 } else {
-                                    wrt.println("failed");
+                                    // order was rejected for some reason
+                                    wrt.println("rejected:" + orderStatus.split(":")[1]);
                                 }
+                                // tell all to update menu qunatites changed
+                                server.updateProductsForALl();
                             } else if (line.startsWith("orderUpdate:")) {
                                 // client want to update his order before it got approved
-                                boolean status = sendUpdatedOrderToKitchen(line);
-                                // brbr
+                                String status = sendUpdatedOrderToKitchen(line.replace("orderUpdate:", ""));
+//                                if (status.startsWith("accepted:")) {
+//                                    wrt.println("accepted:");
+//                                } else {
+//                                    // order was rejected for some reason
+//                                    wrt.println("failed:" + status.split(":")[1]);
+//                                }
+                                // tell all to update menu qunatites changed
+                                server.updateProductsForALl();
                             } else if (line.startsWith("orderDelete:")) {
                                 // client want to remove his order before it got approved
-                                boolean status = RemoveOrderFromKitchen(line);
-                                // brbr
+                                RemoveOrderFromKitchen(line.replace("orderDelete:", ""));
+                                // tell all to update menu qunatites changed
+                                server.updateProductsForALl();
                             } else {
                                 wrt.println("rejected:0:unknown operation");
                             }
+
                         } else {
                             // kitchen recevied some order and they want to change it's status
                             if (line.startsWith("orderStatusUpdate")) {
                                 // orderStatusUpdate:X:Y
                                 // X == status
+                                // status : 0 means rejected
                                 // status : 1 means aproved and they are working on it
                                 // status : 2 means that the order is on it's way
                                 // Y == order number
@@ -267,7 +424,8 @@ class connectionHandler extends Thread {
                                 String name = (line.split(":")[1]);
                                 double price = Double.parseDouble(line.split(":")[2]);
                                 int quantity = Integer.parseInt(line.split(":")[3]);
-                                server.theDB.addProduct(name, price, quantity);
+                                int time = Integer.parseInt(line.split(":")[4]);
+                                server.theDB.addProduct(name, price, quantity, time);
                                 // tell everyone to update their list
                                 server.updateProductsForALl();
                             } else if (line.startsWith("updateProduct")) {
@@ -275,7 +433,8 @@ class connectionHandler extends Thread {
                                 String name = (line.split(":")[2]);
                                 double price = Double.parseDouble(line.split(":")[3]);
                                 int quantity = Integer.parseInt(line.split(":")[4]);
-                                server.theDB.updateProduct(id, name, price, quantity);
+                                int time = Integer.parseInt(line.split(":")[5]);
+                                server.theDB.updateProduct(id, name, price, quantity, time);
                                 // tell everyone to update their list
                                 server.updateProductsForALl();
                             } else if (line.startsWith("deleteProduct")) {
@@ -283,8 +442,6 @@ class connectionHandler extends Thread {
                                 server.theDB.removeProduct(id);
                                 // tell everyone to update their list
                                 server.updateProductsForALl();
-                            } else {
-                                // TODO add more cases?
                             }
                         }
                     }

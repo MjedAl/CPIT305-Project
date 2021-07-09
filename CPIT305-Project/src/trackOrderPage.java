@@ -29,17 +29,28 @@ public class trackOrderPage extends javax.swing.JFrame {
     public void updateStatus(int status) {
         this.orderStatusNum = status;
         // order got aprovved we must stop user from editing the order.
-        if (status == 1) {
+        if (status == 0) {
+            editOrderPanel.setVisible(false);
+            orderStatus.setText("Order rejected :(");
+            statusProgressbar.setValue(-1);
+        } else if (status == 1) {
             editOrderPanel.setVisible(false);
             orderStatus.setText("Order in-progress");
             statusProgressbar.setValue(1);
+
             // order got aproved so stop the editable from being editied
             orderTable.setDefaultEditor(Object.class, null);
-        }else if (status ==2){
+            // calculate estimated time
+            int totalMinitues = 0;
+            for (int i = 0; i < this.productsInCart.size(); i++) {
+                totalMinitues += this.productsInCart.get(i).getEstimatedTimeInMintiues();
+            }
+            int avgTime = totalMinitues / this.productsInCart.size();
+            eta.setText("Estimated time:" + avgTime + " Mintiues");
+        } else if (status == 2) {
             orderStatus.setText("Order is coming for you :)");
             statusProgressbar.setValue(2);
         }
-
     }
 
     public trackOrderPage(ArrayList<product> productsInCart, table theTable, Socket connection, Scanner scanner, PrintWriter writer, int orderNumber) {
@@ -55,9 +66,9 @@ public class trackOrderPage extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
         model.setRowCount(0);
         for (int i = 0; i < this.productsInCart.size(); i++) {
-            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), this.productsInCart.get(i).getQuantity()});
+            model.addRow(new Object[]{this.productsInCart.get(i).getId(), this.productsInCart.get(i).getName(), this.productsInCart.get(i).getPrice(), this.productsInCart.get(i).getRequiredQuantity()});
         }
-        orderIdText.setText("Order id: "+orderNumber);
+        orderIdText.setText("Order id: " + orderNumber);
     }
 
     /**
@@ -77,6 +88,7 @@ public class trackOrderPage extends javax.swing.JFrame {
         saveChangeBtn = new javax.swing.JButton();
         statusProgressbar = new javax.swing.JProgressBar();
         orderStatus = new javax.swing.JLabel();
+        eta = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -174,10 +186,11 @@ public class trackOrderPage extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
-                            .addComponent(orderStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(statusProgressbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(orderStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(eta, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(editOrderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
@@ -202,7 +215,9 @@ public class trackOrderPage extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(orderStatus)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(statusProgressbar, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(eta))
                     .addComponent(editOrderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(46, Short.MAX_VALUE))
         );
@@ -211,61 +226,101 @@ public class trackOrderPage extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeOrderBtnActionPerformed
-        // TODO add your handling code here:
         // 0 == waiting for aproval so user can edit and cancel order
         if (orderStatusNum == 0) {
             //
             String productsStr = "";
             for (int i = 0; i < productsInCart.size(); i++) {
-                productsStr += productsInCart.get(i).getQuantity() + "*" + productsInCart.get(i).getName() + " + ";
+                productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
             }
             // remove the last " + "
-            productsStr = productsStr.substring(0, productsStr.length() - 3);
+            //productsStr = productsStr.substring(0, productsStr.length() - 3);
             writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
             JOptionPane.showMessageDialog(null, "Your order was deleted :(", "Okay", JOptionPane.ERROR_MESSAGE);
             this.theTable.removeTrackPage(orderNumber);
             dispose();
-
-            //
         }
-        // 
     }//GEN-LAST:event_removeOrderBtnActionPerformed
+
+    public void setProductsInCart(ArrayList<product> productsInCart) {
+        this.productsInCart = productsInCart;
+    }
 
     private void saveChangeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveChangeBtnActionPerformed
         // update the products quantity
-
-        // 
         if (orderStatusNum == 0) {
             //save the updated quantity
-            for (int i = 0; i < orderTable.getRowCount(); i++) {
-                this.productsInCart.get(i).setQuantity(((Integer)orderTable.getValueAt(i, 3)));
-            }
-            //
-            String productsStr = "";
-            for (int i = 0; i < productsInCart.size(); i++) {
-                productsStr += productsInCart.get(i).getQuantity() + "*" + productsInCart.get(i).getName() + " + ";
-            }
-            //
+            String productsStr = "orderUpdate:";
 
+            for (int i = 0; i < orderTable.getRowCount(); i++) {
+                // search for the object of the prodcut
+                for (int j = 0; j < this.productsInCart.size(); j++) {
+                    // found the obj
+                    if (this.productsInCart.get(j).getId() == (Integer) orderTable.getValueAt(i, 0)) {
+
+                        if ((Integer) orderTable.getValueAt(i, 3) < 0) {
+                            JOptionPane.showMessageDialog(null, "Quantity can't be less than 0", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if ((Integer) orderTable.getValueAt(i, 3) == 0) {
+                            JOptionPane.showMessageDialog(null, "Please remove the product instead of putting 0", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        // user wants quantity that's bigger than the available
+                        // if new quantiy - old quantity > the avaialble quantity
+                        // why? because the old quanttiy is already reservered for this order so we don't need to see if it's available again :)
+                        if (((Integer) orderTable.getValueAt(i, 3) - this.productsInCart.get(j).getRequiredQuantity()) > this.productsInCart.get(j).getQuantity()) {
+                            // print msg
+                            JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(j).getName() + " only has " + productsInCart.get(j).getQuantity() + " more in stock", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            orderTable.setValueAt(this.productsInCart.get(j).getRequiredQuantity(), i, 3);
+                            return;
+                        } else {
+                            // old quantity * new quantity * product name
+                            productsStr += productsInCart.get(j).getRequiredQuantity() + "*" + orderTable.getValueAt(i, 3) + "*" + orderTable.getValueAt(i, 1) + "+";
+                            this.productsInCart.get(j).setRequiredQuantity((Integer) orderTable.getValueAt(i, 3));
+                        }
+                    }
+                }
+                //productsStr += orderTable.getValueAt(i, 3) + "*" + orderTable.getValueAt(i, 1) + "+";
+            }
             // remove the last " + "
-            productsStr = productsStr.substring(0, productsStr.length() - 3);
-            writer.println("orderUpdate:" + productsStr + ":" + this.orderNumber);
-            JOptionPane.showMessageDialog(null, "Your order was updated :(", "Okay", JOptionPane.DEFAULT_OPTION);
+            //productsStr = productsStr.substring(0, productsStr.length() - 3);
+
+            writer.println(productsStr + ":" + this.orderNumber);
+            JOptionPane.showMessageDialog(null, "Your order update was sent", "Okay", JOptionPane.DEFAULT_OPTION);
         }
     }//GEN-LAST:event_saveChangeBtnActionPerformed
 
     private void removeProductBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeProductBtnActionPerformed
-        // TODO add your handling code here:
-        int[] productsIndxes = orderTable.getSelectedRows();
-        DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
-        for (int i = 0; i < productsIndxes.length; i++) {
-            productsInCart.remove(productsIndxes[i]);
-            model.removeRow(productsIndxes[i]);
-        }
+        JOptionPane.showMessageDialog(null, "TODO", "Info", JOptionPane.DEFAULT_OPTION);
+        // FIX IT LATER
+//        int[] productsIndxes = orderTable.getSelectedRows();
+//        if (productsInCart.size() == 1) {
+//            JOptionPane.showMessageDialog(null, "You only have one product. your order will be canceled", "Info", JOptionPane.DEFAULT_OPTION);
+//            String productsStr = "";
+//            for (int i = 0; i < productsInCart.size(); i++) {
+//                productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
+//            }
+//            writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
+//            JOptionPane.showMessageDialog(null, "Your order was deleted :(", "Okay", JOptionPane.ERROR_MESSAGE);
+//            this.theTable.removeTrackPage(orderNumber);
+//            dispose();
+//        } else {
+//            // user has multiple orders, only delete the selected
+//            DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
+//            for (int i = 0; i < productsIndxes.length; i++) {
+//                productsInCart.remove(productsIndxes[i]);
+//                model.removeRow(productsIndxes[i]);
+//            }
+//        }
+
+        // send the update order to the kitchen
+
     }//GEN-LAST:event_removeProductBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel editOrderPanel;
+    private javax.swing.JLabel eta;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel orderIdText;
@@ -276,4 +331,18 @@ public class trackOrderPage extends javax.swing.JFrame {
     private javax.swing.JButton saveChangeBtn;
     private javax.swing.JProgressBar statusProgressbar;
     // End of variables declaration//GEN-END:variables
+
+    // TODO, maybe remove this?
+    void updateProductsQuantites(ArrayList<product> products) {
+        // loop through all products in cart
+        for (int i = 0; i < this.productsInCart.size(); i++) {
+            // search for the object in the full list
+            for (int j = 0; j < products.size(); j++) {
+                if (productsInCart.get(i).getId() == products.get(j).getId()) {
+                    productsInCart.get(i).setQuantity(products.get(j).getQuantity());
+                    break;
+                }
+            }
+        }
+    }
 }
