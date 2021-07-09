@@ -408,6 +408,7 @@ class connectionHandler extends Thread {
                             if (line.startsWith("orderStatusUpdate")) {
                                 // orderStatusUpdate:X:Y
                                 // X == status
+                                // status : 0 means rejected
                                 // status : 1 means aproved and they are working on it
                                 // status : 2 means that the order is on it's way
                                 // Y == order number

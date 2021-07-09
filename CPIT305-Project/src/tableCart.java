@@ -170,7 +170,7 @@ public class tableCart extends javax.swing.JFrame {
         System.out.println("We got response from server");
         int orderNumber = -1;
         if (response.startsWith("accepted")) {
-            JOptionPane.showMessageDialog(null, "Your order was accepted :)", "Accepted", JOptionPane.DEFAULT_OPTION);
+            JOptionPane.showMessageDialog(null, "Your order was sent :)", "Accepted", JOptionPane.DEFAULT_OPTION);
             orderNumber = Integer.parseInt(response.split(":")[1]);
             // open tracking page for the order
             // open the order page

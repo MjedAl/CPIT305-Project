@@ -35,13 +35,13 @@ class listenForOrders extends Thread {
 
     @Override
     public void run() {
-        File f= new File("Kitchen LogFile");
+        File f = new File("Kitchen LogFile");
         f.mkdir();
         try {
             System.setOut(new PrintStream("Kitchen LogFile\\KitchenCommand.txt"));
             System.setErr(new PrintStream("Kitchen LogFile\\KitchenError.txt"));
         } catch (FileNotFoundException ex) {
-           
+
         }
         String line;
         System.out.println("Kitchen is lisining for commands.");
@@ -171,6 +171,7 @@ public class kitchen extends javax.swing.JFrame {
         ordersTable = new javax.swing.JTable();
         confirmOrderBtn = new javax.swing.JButton();
         orderReadyBtn = new javax.swing.JButton();
+        rejectOrderBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -216,6 +217,14 @@ public class kitchen extends javax.swing.JFrame {
             }
         });
 
+        rejectOrderBtn.setText("Reject order");
+        rejectOrderBtn.setToolTipText("");
+        rejectOrderBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rejectOrderBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -224,10 +233,12 @@ public class kitchen extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 1007, Short.MAX_VALUE)
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(editMenuBtn))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1093, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(rejectOrderBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(confirmOrderBtn)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(orderReadyBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -244,7 +255,8 @@ public class kitchen extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(orderReadyBtn)
-                    .addComponent(confirmOrderBtn))
+                    .addComponent(confirmOrderBtn)
+                    .addComponent(rejectOrderBtn))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -276,7 +288,7 @@ public class kitchen extends javax.swing.JFrame {
                 ordersTable.setValueAt("Confirmed", selectedIndexes[i], 4);
                 //
             } else {
-                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " has already been approved", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " has already been confirmed or is rejected", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_confirmOrderBtnActionPerformed
@@ -284,20 +296,34 @@ public class kitchen extends javax.swing.JFrame {
     private void orderReadyBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orderReadyBtnActionPerformed
         int[] selectedIndexes = ordersTable.getSelectedRows();
         for (int i = 0; i < selectedIndexes.length; i++) {
-            //
             if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Confirmed")) {
                 // we can approve it
                 String orderID = (String) ordersTable.getValueAt(selectedIndexes[i], 3);
                 writer.println("orderStatusUpdate:2:" + orderID);
                 ordersTable.setValueAt("Ready", selectedIndexes[i], 4);
-                //
+                // TODO remove the row
             } else if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Recevied")) {
                 JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " need to be confirmed first", "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " is ready from a while", "Error", JOptionPane.ERROR_MESSAGE);
+            }else if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Rejected")) {
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " is rejected", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_orderReadyBtnActionPerformed
+
+    private void rejectOrderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rejectOrderBtnActionPerformed
+        int[] selectedIndexes = ordersTable.getSelectedRows();
+        for (int i = 0; i < selectedIndexes.length; i++) {
+            //
+            if (((String) ordersTable.getValueAt(selectedIndexes[i], 4)).equalsIgnoreCase("Recevied")) {
+                // we can reject it
+                String orderID = (String) ordersTable.getValueAt(selectedIndexes[i], 3);
+                writer.println("orderStatusUpdate:0:" + orderID);
+                ordersTable.setValueAt("Rejected", selectedIndexes[i], 4);
+            } else {
+                JOptionPane.showMessageDialog(null, "Order number " + ordersTable.getValueAt(selectedIndexes[i], 3) + " cannot be rejected now", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_rejectOrderBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton confirmOrderBtn;
@@ -305,5 +331,6 @@ public class kitchen extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton orderReadyBtn;
     public javax.swing.JTable ordersTable;
+    private javax.swing.JButton rejectOrderBtn;
     // End of variables declaration//GEN-END:variables
 }

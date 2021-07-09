@@ -29,7 +29,11 @@ public class trackOrderPage extends javax.swing.JFrame {
     public void updateStatus(int status) {
         this.orderStatusNum = status;
         // order got aprovved we must stop user from editing the order.
-        if (status == 1) {
+        if (status == 0) {
+            editOrderPanel.setVisible(false);
+            orderStatus.setText("Order rejected :(");
+            statusProgressbar.setValue(-1);
+        } else if (status == 1) {
             editOrderPanel.setVisible(false);
             orderStatus.setText("Order in-progress");
 
@@ -40,16 +44,14 @@ public class trackOrderPage extends javax.swing.JFrame {
             // calculate estimated time
             int totalMinitues = 0;
             for (int i = 0; i < this.productsInCart.size(); i++) {
-                totalMinitues+= this.productsInCart.get(i).getEstimatedTimeInMintiues();
+                totalMinitues += this.productsInCart.get(i).getEstimatedTimeInMintiues();
             }
-            int avgTime = totalMinitues/this.productsInCart.size();
-            orderStatus.setText("Order in-progress");
-            eta.setText("Estimated time:"+avgTime+" Mintiues");
+            int avgTime = totalMinitues / this.productsInCart.size();
+            eta.setText("Estimated time:" + avgTime + " Mintiues");
         } else if (status == 2) {
             orderStatus.setText("Order is coming for you :)");
             statusProgressbar.setValue(2);
         }
-
     }
 
     public trackOrderPage(ArrayList<product> productsInCart, table theTable, Socket connection, Scanner scanner, PrintWriter writer, int orderNumber) {
