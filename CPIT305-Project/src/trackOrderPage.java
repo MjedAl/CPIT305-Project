@@ -33,6 +33,12 @@ public class trackOrderPage extends javax.swing.JFrame {
             editOrderPanel.setVisible(false);
             orderStatus.setText("Order rejected :(");
             statusProgressbar.setValue(-1);
+            // tell server to return reserved items
+            String productsStr = "";
+            for (int i = 0; i < productsInCart.size(); i++) {
+                productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
+            }
+            writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
         } else if (status == 1) {
             editOrderPanel.setVisible(false);
             orderStatus.setText("Order in-progress");
@@ -50,6 +56,7 @@ public class trackOrderPage extends javax.swing.JFrame {
         } else if (status == 2) {
             orderStatus.setText("Order is coming for you :)");
             statusProgressbar.setValue(2);
+            eta.setText("");
         }
     }
 
@@ -84,7 +91,6 @@ public class trackOrderPage extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         editOrderPanel = new javax.swing.JPanel();
         removeOrderBtn = new javax.swing.JButton();
-        removeProductBtn = new javax.swing.JButton();
         saveChangeBtn = new javax.swing.JButton();
         statusProgressbar = new javax.swing.JProgressBar();
         orderStatus = new javax.swing.JLabel();
@@ -132,14 +138,6 @@ public class trackOrderPage extends javax.swing.JFrame {
             }
         });
 
-        removeProductBtn.setText("Remove product");
-        removeProductBtn.setToolTipText("");
-        removeProductBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeProductBtnActionPerformed(evt);
-            }
-        });
-
         saveChangeBtn.setText("Send changes");
         saveChangeBtn.setToolTipText("");
         saveChangeBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -154,11 +152,12 @@ public class trackOrderPage extends javax.swing.JFrame {
             editOrderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(editOrderPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(editOrderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(removeOrderBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(removeProductBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(saveChangeBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(removeOrderBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, editOrderPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(saveChangeBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         editOrderPanelLayout.setVerticalGroup(
             editOrderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -166,10 +165,8 @@ public class trackOrderPage extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(removeOrderBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(removeProductBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(saveChangeBtn)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(44, Short.MAX_VALUE))
         );
 
         statusProgressbar.setMaximum(2);
@@ -233,8 +230,6 @@ public class trackOrderPage extends javax.swing.JFrame {
             for (int i = 0; i < productsInCart.size(); i++) {
                 productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
             }
-            // remove the last " + "
-            //productsStr = productsStr.substring(0, productsStr.length() - 3);
             writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
             JOptionPane.showMessageDialog(null, "Your order was deleted :(", "Okay", JOptionPane.ERROR_MESSAGE);
             this.theTable.removeTrackPage(orderNumber);
@@ -263,7 +258,7 @@ public class trackOrderPage extends javax.swing.JFrame {
                             return;
                         }
                         if ((Integer) orderTable.getValueAt(i, 3) == 0) {
-                            JOptionPane.showMessageDialog(null, "Please remove the product instead of putting 0", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "Please cancel the order instead of putting 0", "Rejected", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                         // user wants quantity that's bigger than the available
@@ -281,42 +276,11 @@ public class trackOrderPage extends javax.swing.JFrame {
                         }
                     }
                 }
-                //productsStr += orderTable.getValueAt(i, 3) + "*" + orderTable.getValueAt(i, 1) + "+";
             }
-            // remove the last " + "
-            //productsStr = productsStr.substring(0, productsStr.length() - 3);
-
             writer.println(productsStr + ":" + this.orderNumber);
             JOptionPane.showMessageDialog(null, "Your order update was sent", "Okay", JOptionPane.DEFAULT_OPTION);
         }
     }//GEN-LAST:event_saveChangeBtnActionPerformed
-
-    private void removeProductBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeProductBtnActionPerformed
-        JOptionPane.showMessageDialog(null, "TODO", "Info", JOptionPane.DEFAULT_OPTION);
-        // FIX IT LATER
-//        int[] productsIndxes = orderTable.getSelectedRows();
-//        if (productsInCart.size() == 1) {
-//            JOptionPane.showMessageDialog(null, "You only have one product. your order will be canceled", "Info", JOptionPane.DEFAULT_OPTION);
-//            String productsStr = "";
-//            for (int i = 0; i < productsInCart.size(); i++) {
-//                productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
-//            }
-//            writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
-//            JOptionPane.showMessageDialog(null, "Your order was deleted :(", "Okay", JOptionPane.ERROR_MESSAGE);
-//            this.theTable.removeTrackPage(orderNumber);
-//            dispose();
-//        } else {
-//            // user has multiple orders, only delete the selected
-//            DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
-//            for (int i = 0; i < productsIndxes.length; i++) {
-//                productsInCart.remove(productsIndxes[i]);
-//                model.removeRow(productsIndxes[i]);
-//            }
-//        }
-
-        // send the update order to the kitchen
-
-    }//GEN-LAST:event_removeProductBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel editOrderPanel;
@@ -327,7 +291,6 @@ public class trackOrderPage extends javax.swing.JFrame {
     private javax.swing.JLabel orderStatus;
     private javax.swing.JTable orderTable;
     private javax.swing.JButton removeOrderBtn;
-    private javax.swing.JButton removeProductBtn;
     private javax.swing.JButton saveChangeBtn;
     private javax.swing.JProgressBar statusProgressbar;
     // End of variables declaration//GEN-END:variables

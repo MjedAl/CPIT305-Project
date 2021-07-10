@@ -38,16 +38,26 @@ public class server {
 
     public static void main(String[] args) throws IOException {
 
-        //create folder to store all server log File
-        File f = new File("Server LogFile");
+        //create folder to store all log Files
+        File f = new File("LogFiles");
         f.mkdir();
-        //set the default output to new folder to store all the command
-        System.setOut(new PrintStream("Server LogFile\\Command.txt"));
-        //set the default error to new folder to store all the error message
-        System.setErr(new PrintStream("Server LogFile\\Error.txt"));
-        //Write the current date on top of file
+
+        //create folder to store server log File
+        File file = new File("LogFiles\\Server LogFiles");
+        file.mkdir();
+
+        //create new file for all server command
+        FileOutputStream serverCommand = new FileOutputStream("LogFiles\\Server LogFiles\\Server Command.txt", true);
+        //create new file for all server error
+        FileOutputStream serverError = new FileOutputStream("LogFiles\\Server LogFiles\\Server Error.txt");
+        //set the default output to new file to store all the command
+        System.setOut(new PrintStream(serverCommand));
+        //set the default error to new file to store all the error message
+        System.setErr(new PrintStream(serverError));
+        //Write the current date on top of the file
         LocalDateTime d = LocalDateTime.now();
         String formattedDate = d.format(DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss"));
+        System.out.println("/////////////////////////////////////////");
         System.out.println("Current Date: " + formattedDate + "\n");
 
         try {
@@ -253,7 +263,7 @@ class connectionHandler extends Thread {
                         try {
                             server.theDB.updateProductQuantity(server.products.get(j).getId(), server.products.get(j).getQuantity());
                         } catch (SQLException ex) {
-                            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            System.err.println("Error " + ex);
                         }
                     } else {
                         missingSomething += server.products.get(j).getName();
@@ -330,6 +340,7 @@ class connectionHandler extends Thread {
                     }
                     wrt.println("accepted");
                 } catch (NumberFormatException e) {
+                    System.err.println("Error " + e);
                     wrt.println("rejected:1:Invalid table number");
                     System.out.println("table rejected");
                     rejected = true;
@@ -450,9 +461,9 @@ class connectionHandler extends Thread {
                 this.connection.close();
             }
         } catch (IOException ex) {
-            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         } catch (SQLException ex) {
-            Logger.getLogger(connectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error " + ex);
         }
 
     }
