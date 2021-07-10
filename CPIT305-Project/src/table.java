@@ -44,19 +44,19 @@ class listenForServerUpdates extends Thread {
     @Override
     public void run() {
         try {
-            
-            File f = new File("LogFiles\\Table LogFile");
-        f.mkdir();
-        
+
+            File f = new File("LogFiles\\Table " + this.tableGUI.getTableID() + " LogFile");
+            f.mkdir();
+
             //create new file for all Table command
             FileOutputStream tableCommand = new FileOutputStream("LogFiles\\Table LogFile\\Table Command.txt", true);
-            
+
             //create new file for all Table Error
             FileOutputStream tableError = new FileOutputStream("LogFiles\\Table LogFile\\Table Error.txt", true);
-            
+
             //set the default output to new file to store all the command
             System.setOut(new PrintStream(tableCommand));
-            
+
             //set the default output to new file to store all the Error message
             System.setErr(new PrintStream(tableError));
         } catch (FileNotFoundException ex) {
@@ -69,7 +69,7 @@ class listenForServerUpdates extends Thread {
 
             // recevied new order.
             // newOrder # table id # order # time
-            if(!scanner.hasNextLine()){
+            if (!scanner.hasNextLine()) {
                 break;
             }
             line = scanner.nextLine();
@@ -99,7 +99,7 @@ class listenForServerUpdates extends Thread {
                 } catch (IOException ex) {
                     System.err.println("Error " + ex);
                 } catch (ClassNotFoundException ex) {
-                     System.err.println("Error " + ex);
+                    System.err.println("Error " + ex);
                 }
                 this.tableGUI.refreshListView();
             }
@@ -122,6 +122,10 @@ public class table extends javax.swing.JFrame {
     // obj of the cart class
     public tableCart cart;
     // keep track of current order list.
+
+    public String getTableID() {
+        return tableID;
+    }
 
     public ArrayList<trackOrderPage> orderPages = new ArrayList<trackOrderPage>();
 
@@ -148,7 +152,7 @@ public class table extends javax.swing.JFrame {
         tableNumLabel.setText("Table number : " + tableID);
         // make obj for the cart
         cart = new tableCart(this, connection, scanner, writer);
-        
+
         // handling window closing event
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(new WindowAdapter() {
@@ -171,7 +175,7 @@ public class table extends javax.swing.JFrame {
         } catch (IOException ex) {
             System.err.println("Error " + ex);
         } catch (ClassNotFoundException ex) {
-             System.err.println("Error " + ex);
+            System.err.println("Error " + ex);
         }
 
         new listenForServerUpdates(connection, scanner, writer, this).start();
