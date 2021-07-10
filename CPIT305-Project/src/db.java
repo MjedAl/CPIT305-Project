@@ -85,9 +85,9 @@ public class db {
                 this.setup = true;
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 // local db
-                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
+//                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resturantSystem?useSSL=false", "root", "");
                 // online db
-                //con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
+                con = DriverManager.getConnection("jdbc:mysql://sql11.freemysqlhosting.net:3306/sql11422105?useSSL=false", "sql11422105", "E8GkB4LIX2");
 
                 stat = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 stat.execute("create table if not exists products (ID int primary key AUTO_INCREMENT, name char(20),price double, quantity int, minitues int)");

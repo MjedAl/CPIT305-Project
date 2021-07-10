@@ -33,6 +33,12 @@ public class trackOrderPage extends javax.swing.JFrame {
             editOrderPanel.setVisible(false);
             orderStatus.setText("Order rejected :(");
             statusProgressbar.setValue(-1);
+            // tell server to return reserved items
+            String productsStr = "";
+            for (int i = 0; i < productsInCart.size(); i++) {
+                productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
+            }
+            writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
         } else if (status == 1) {
             editOrderPanel.setVisible(false);
             orderStatus.setText("Order in-progress");
@@ -233,8 +239,6 @@ public class trackOrderPage extends javax.swing.JFrame {
             for (int i = 0; i < productsInCart.size(); i++) {
                 productsStr += productsInCart.get(i).getRequiredQuantity() + "*" + productsInCart.get(i).getName() + "+";
             }
-            // remove the last " + "
-            //productsStr = productsStr.substring(0, productsStr.length() - 3);
             writer.println("orderDelete:" + productsStr + ":" + this.orderNumber);
             JOptionPane.showMessageDialog(null, "Your order was deleted :(", "Okay", JOptionPane.ERROR_MESSAGE);
             this.theTable.removeTrackPage(orderNumber);
@@ -281,11 +285,7 @@ public class trackOrderPage extends javax.swing.JFrame {
                         }
                     }
                 }
-                //productsStr += orderTable.getValueAt(i, 3) + "*" + orderTable.getValueAt(i, 1) + "+";
             }
-            // remove the last " + "
-            //productsStr = productsStr.substring(0, productsStr.length() - 3);
-
             writer.println(productsStr + ":" + this.orderNumber);
             JOptionPane.showMessageDialog(null, "Your order update was sent", "Okay", JOptionPane.DEFAULT_OPTION);
         }

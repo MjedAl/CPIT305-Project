@@ -203,7 +203,10 @@ public class tableCart extends javax.swing.JFrame {
                 for (int j = 0; j < this.productsInCart.size(); j++) {
                     // found the obj
                     if (this.productsInCart.get(j).getId() == (Integer) productsTable.getValueAt(i, 0)) {
-                        // user wants quantity that's bigger than the available
+                        if ((Integer) productsTable.getValueAt(i, 3) < 0) {
+                            JOptionPane.showMessageDialog(null, "Quantity can't be less than 0", "Rejected", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }                        // user wants quantity that's bigger than the available
                         if ((Integer) productsTable.getValueAt(i, 3) > this.productsInCart.get(j).getQuantity()) {
                             // print msg
                             JOptionPane.showMessageDialog(null, "Product " + productsInCart.get(j).getName() + " only has " + productsInCart.get(j).getQuantity() + " in stock", "Rejected", JOptionPane.ERROR_MESSAGE);
