@@ -49,10 +49,10 @@ class listenForServerUpdates extends Thread {
             f.mkdir();
 
             //create new file for all Table command
-            FileOutputStream tableCommand = new FileOutputStream("LogFiles\\Table LogFile\\Table Command.txt", true);
+            FileOutputStream tableCommand = new FileOutputStream("LogFiles\\Table " + this.tableGUI.getTableID() + " LogFile\\Table Command.txt", true);
 
             //create new file for all Table Error
-            FileOutputStream tableError = new FileOutputStream("LogFiles\\Table LogFile\\Table Error.txt", true);
+            FileOutputStream tableError = new FileOutputStream("LogFiles\\Table " + this.tableGUI.getTableID() + " LogFile\\Table Error.txt", true);
 
             //set the default output to new file to store all the command
             System.setOut(new PrintStream(tableCommand));
